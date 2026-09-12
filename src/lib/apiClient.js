@@ -380,7 +380,7 @@ export const api = {
 
   // ---------- 12. Telephony (mock-safe) ----------
   getTelephonyStatus: (user) => guard(async () => {
-    const response = await base44.functions.invoke('communications', { action: 'health_check', adminCheck: true });
+    const response = await base44.functions.invoke('communications', { action: 'health_check' });
     return response?.data || response;
   }),
   postCall: (user, { lead_id, to, from, twimlUrl, record = true }) => guard(async () => {
