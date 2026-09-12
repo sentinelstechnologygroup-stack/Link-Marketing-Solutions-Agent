@@ -14,7 +14,7 @@ export default function LeadFormDialog({ open, onClose, brands, campaigns, onSav
   const isEdit = !!lead;
 
   const brandOptions = brands || [];
-  const campaignOptions = (campaigns || []).filter(c => !formBrand || c.brand_id === formBrand);
+  const [formBrand, setFormBrand] = useState(lead?.brand_id || (brands?.[0]?.id || ''));
 
   const [form, setForm] = useState({
     first_name: lead?.first_name || '',
@@ -27,7 +27,7 @@ export default function LeadFormDialog({ open, onClose, brands, campaigns, onSav
     campaign_id: lead?.campaign_id || '',
     lead_source_id: '',
   });
-  const [formBrand, setFormBrand] = useState(form.brand_id);
+  const campaignOptions = (campaigns || []).filter(c => !formBrand || c.brand_id === formBrand);
 
   const update = (k, v) => {
     setForm(prev => ({ ...prev, [k]: v }));
