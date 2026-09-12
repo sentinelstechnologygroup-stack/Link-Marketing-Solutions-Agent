@@ -176,7 +176,7 @@ export const api = {
     };
   }),
 
-  postDisposition: (user, leadId, { disposition, notes, next_action, qualification_data = null }) => guard(async () => {
+  postDisposition: (user, leadId, { disposition, notes, next_action, qualification_data = null, provider_mode = 'mock' }) => guard(async () => {
     const lead = await base44.entities.Lead.get(leadId);
     const brands = permittedBrandIds(user);
     if (brands !== null && !brands.includes(lead.brand_id)) throw new ApiError('Not permitted', 403);
@@ -185,7 +185,7 @@ export const api = {
       organization_id: lead.organization_id, brand_id: lead.brand_id, campaign_id: lead.campaign_id,
       lead_id: lead.id, agent_id: user.id, call_direction: 'outbound',
       call_start: now, call_end: now, duration_seconds: 0,
-      notes, disposition, next_action, provider_mode: 'mock',
+      notes, disposition, next_action, provider_mode,
     });
     const statusMap = { connected: 'connected', qualified: 'qualified', unqualified: 'unqualified', warm_transfer_completed: 'warm_transfer', appointment_booked: 'appointment_scheduled', closed: 'closed', lost: 'lost', duplicate: 'duplicate', do_not_call: 'do_not_call' };
     const updated = await base44.entities.Lead.update(lead.id, {
