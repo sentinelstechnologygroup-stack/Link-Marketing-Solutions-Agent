@@ -15,6 +15,8 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 // App pages
 import Home from '@/pages/Home';
+import AgentWorkspace from '@/pages/AgentWorkspace';
+import SupervisorWorkspace from '@/pages/SupervisorWorkspace';
 import Leads from '@/pages/Leads';
 import LeadDetail from '@/pages/LeadDetail';
 import Brands from '@/pages/Brands';
@@ -55,6 +57,8 @@ const AuthenticatedApp = () => {
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/workspace" element={<AgentWorkspace />} />
+          <Route path="/supervisor" element={<SupervisorWorkspace />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/leads/:id" element={<LeadDetail />} />
           <Route path="/brands" element={<Brands />} />

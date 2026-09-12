@@ -5,12 +5,14 @@ import { ROLE_LABELS, isAdminRole, canManageScripts, canManageBrands, canViewAud
 import { base44 } from '@/api/base44Client';
 import {
   LayoutDashboard, Inbox, Building2, FileText, GitBranch, Calendar,
-  Phone, ShieldCheck, LogOut, Menu, X, Users, ClipboardList
+  Phone, ShieldCheck, LogOut, Menu, X, Users, ClipboardList, Headphones, Eye
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard, roles: null },
+  { label: 'Agent Workspace', path: '/workspace', icon: Headphones, roles: null },
   { label: 'Lead Inbox', path: '/leads', icon: Inbox, roles: null },
+  { label: 'Supervisor', path: '/supervisor', icon: Eye, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin', 'supervisor'] },
   { label: 'Appointments', path: '/appointments', icon: Calendar, roles: null },
   { label: 'Brands', path: '/brands', icon: Building2, roles: null },
   { label: 'Scripts', path: '/scripts', icon: FileText, roles: null },
