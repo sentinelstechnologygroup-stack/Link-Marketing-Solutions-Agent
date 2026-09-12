@@ -1,0 +1,238 @@
+{
+  "name": "PhoneNumber",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "campaign_id": {
+      "type": "string"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "number_type": {
+      "type": "string",
+      "enum": [
+        "local",
+        "toll_free",
+        "ported"
+      ],
+      "default": "local"
+    },
+    "caller_id_name": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string",
+      "default": "US"
+    },
+    "area_code": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "porting",
+        "pending_verification"
+      ],
+      "default": "active"
+    },
+    "provider": {
+      "type": "string",
+      "default": "twilio"
+    },
+    "inbound_routing": {
+      "type": "string"
+    },
+    "outbound_routing": {
+      "type": "string"
+    },
+    "after_hours_routing": {
+      "type": "string"
+    },
+    "recording_policy": {
+      "type": "string",
+      "enum": [
+        "record_all",
+        "record_on_consent",
+        "do_not_record"
+      ],
+      "default": "record_on_consent"
+    },
+    "assigned_queue": {
+      "type": "string"
+    },
+    "reputation_status": {
+      "type": "string",
+      "enum": [
+        "good",
+        "warning",
+        "flagged"
+      ],
+      "default": "good"
+    }
+  },
+  "required": [
+    "organization_id",
+    "brand_id",
+    "phone_number"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "supervisor"
+                  }
+                },
+                {
+                  "data.brand_id": {
+                    "$in": "{{user.data.assigned_brand_ids}}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

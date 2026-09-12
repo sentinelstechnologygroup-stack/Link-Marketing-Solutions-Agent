@@ -1,0 +1,356 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "campaign_id": {
+      "type": "string"
+    },
+    "lead_source_id": {
+      "type": "string"
+    },
+    "landing_page": {
+      "type": "string"
+    },
+    "utm_source": {
+      "type": "string"
+    },
+    "utm_medium": {
+      "type": "string"
+    },
+    "utm_campaign": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "lead_status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "contact_attempted",
+        "connected",
+        "qualified",
+        "unqualified",
+        "accepted",
+        "warm_transfer",
+        "appointment_scheduled",
+        "closed",
+        "lost",
+        "duplicate",
+        "do_not_call"
+      ],
+      "default": "new"
+    },
+    "priority": {
+      "type": "number",
+      "default": 5,
+      "description": "1 highest"
+    },
+    "assigned_queue": {
+      "type": "string"
+    },
+    "assigned_agent_id": {
+      "type": "string"
+    },
+    "qualification_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "qualified",
+        "unqualified"
+      ],
+      "default": "pending"
+    },
+    "qualification_score": {
+      "type": "number",
+      "default": 0
+    },
+    "qualification_data": {
+      "type": "object",
+      "description": "Structured qualification answers JSON"
+    },
+    "contact_attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_action": {
+      "type": "string"
+    },
+    "next_action_due": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "new",
+        "attempted",
+        "no_answer",
+        "voicemail_left",
+        "connected",
+        "qualified",
+        "unqualified",
+        "duplicate",
+        "wrong_number",
+        "do_not_call",
+        "warm_transfer_completed",
+        "appointment_booked",
+        "appointment_completed",
+        "realtor_accepted",
+        "realtor_declined",
+        "business_owner_unavailable",
+        "follow_up_required",
+        "closed",
+        "lost"
+      ],
+      "default": "new"
+    },
+    "owner_acceptance_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined",
+        "timeout",
+        "not_required"
+      ],
+      "default": "not_required"
+    },
+    "appointment_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "booked",
+        "confirmed",
+        "attended",
+        "canceled",
+        "no_show",
+        "outcome_unknown"
+      ],
+      "default": "none"
+    },
+    "closed_outcome": {
+      "type": "string"
+    },
+    "consent_recorded": {
+      "type": "boolean",
+      "default": false
+    },
+    "consent_language_version": {
+      "type": "string"
+    },
+    "duplicate_of_lead_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "brand_id",
+    "campaign_id",
+    "first_name"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "supervisor"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "auditor"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "reporting_only"
+                  }
+                },
+                {
+                  "data.brand_id": {
+                    "$in": "{{user.data.assigned_brand_ids}}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                },
+                {
+                  "data.brand_id": {
+                    "$in": "{{user.data.assigned_brand_ids}}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "supervisor"
+                  }
+                },
+                {
+                  "data.brand_id": {
+                    "$in": "{{user.data.assigned_brand_ids}}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

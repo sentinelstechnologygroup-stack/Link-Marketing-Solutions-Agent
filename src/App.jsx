@@ -1,17 +1,34 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Layout from '@/components/Layout';
+// Auth pages
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+// App pages
+import Home from '@/pages/Home';
+import Leads from '@/pages/Leads';
+import LeadDetail from '@/pages/LeadDetail';
+import Brands from '@/pages/Brands';
+import Scripts from '@/pages/Scripts';
+import QualificationForms from '@/pages/QualificationForms';
+import RoutingRules from '@/pages/RoutingRules';
+import Appointments from '@/pages/Appointments';
+import PhoneNumbers from '@/pages/PhoneNumbers';
+import BusinessOwners from '@/pages/BusinessOwners';
+import AuditLog from '@/pages/AuditLog';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -20,21 +37,36 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/leads" element={<Leads />} />
+          <Route path="/leads/:id" element={<LeadDetail />} />
+          <Route path="/brands" element={<Brands />} />
+          <Route path="/scripts" element={<Scripts />} />
+          <Route path="/qualification-forms" element={<QualificationForms />} />
+          <Route path="/routing-rules" element={<RoutingRules />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/phone-numbers" element={<PhoneNumbers />} />
+          <Route path="/business-owners" element={<BusinessOwners />} />
+          <Route path="/audit-log" element={<AuditLog />} />
+        </Route>
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -42,7 +74,6 @@ const AuthenticatedApp = () => {
 
 
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>

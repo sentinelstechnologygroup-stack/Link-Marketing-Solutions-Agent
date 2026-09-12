@@ -1,0 +1,210 @@
+{
+  "name": "BusinessOwner",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "role_type": {
+      "type": "string",
+      "enum": [
+        "business_owner",
+        "realtor",
+        "licensed_professional"
+      ],
+      "default": "business_owner"
+    },
+    "license_number": {
+      "type": "string"
+    },
+    "license_state": {
+      "type": "string"
+    },
+    "rotation_position": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "user_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "brand_id",
+    "name"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "supervisor"
+                  }
+                },
+                {
+                  "data.brand_id": {
+                    "$in": "{{user.data.assigned_brand_ids}}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.organization_id": "{{user.data.organization_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "org_admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "brand_admin"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
