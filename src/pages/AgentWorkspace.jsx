@@ -160,7 +160,7 @@ function LeadContextPanel({ leadId, onSaved }) {
   const save = async () => {
     setSaving(true);
     try {
-      await api.postDisposition(user, leadId, { disposition, notes, next_action: nextAction });
+      await api.postDisposition(user, leadId, { disposition, notes, next_action: nextAction, provider_mode: call?.mode || telephony?.mode || 'mock' });
       toast({ title: 'Disposition saved' });
       setNotes(''); setNextAction('');
       onSaved?.(); load();
