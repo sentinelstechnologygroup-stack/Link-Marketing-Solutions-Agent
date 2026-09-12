@@ -30,11 +30,15 @@ export function resolveProviderMode(secrets) {
   const token = secrets.get("TWILIO_AUTH_TOKEN");
   const apiKey = secrets.get("TWILIO_API_KEY");
   const apiSecret = secrets.get("TWILIO_API_SECRET");
-  const hasCreds = !!(sid && (token || (apiKey && apiSecret)));
+  const hasCredentials = !!(sid && (token || (apiKey && apiSecret)));
+  const hasCallConfig = !!(secrets.get("TWILIO_DEFAULT_FROM_NUMBER") && secrets.get("TWILIO_VOICE_TWIML_URL"));
+  const ready = hasCredentials && hasCallConfig;
   return {
-    mode: hasCreds ? "production" : "mock",
+    mode: ready ? "production" : "mock",
     provider: "twilio",
-    configured: hasCreds,
+    configured: ready,
+    credentials_configured: hasCredentials,
+    call_configured: hasCallConfig,
     workspace_sid: secrets.get("TWILIO_WORKSPACE_SID") || null,
     flex_flow_sid: secrets.get("TWILIO_FLEX_FLOW_SID") || null,
     task_router_sid: secrets.get("TWILIO_TASK_ROUTER_SID") || null,
@@ -49,9 +53,11 @@ export function resolveProviderMode(secrets) {
 export function productionChecklist(secrets) {
   const required = [
     "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN",
+    "TWILIO_API_KEY", "TWILIO_API_SECRET",
     "TWILIO_WORKSPACE_SID", "TWILIO_FLEX_FLOW_SID",
     "TWILIO_TASK_ROUTER_SID", "TWILIO_DEFAULT_FROM_NUMBER",
-    "TWILIO_WEBHOOK_SIGNING_SECRET"
+    "TWILIO_VOICE_TWIML_URL", "TWILIO_STATUS_CALLBACK_URL",
+    "TWILIO_RECORDING_CALLBACK_URL", "TWILIO_WEBHOOK_SIGNING_SECRET"
   ];
   return required.map(name => ({ name, set: !!secrets.get(name) }));
 }
