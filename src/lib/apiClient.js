@@ -176,7 +176,7 @@ export const api = {
     };
   }),
 
-  postDisposition: (user, leadId, { disposition, notes, next_action, qualification_data }) => guard(async () => {
+  postDisposition: (user, leadId, { disposition, notes, next_action, qualification_data = null }) => guard(async () => {
     const lead = await base44.entities.Lead.get(leadId);
     const brands = permittedBrandIds(user);
     if (brands !== null && !brands.includes(lead.brand_id)) throw new ApiError('Not permitted', 403);
@@ -383,7 +383,7 @@ export const api = {
     const response = await base44.functions.invoke('communications', { action: 'health_check' });
     return response?.data || response;
   }),
-  postCall: (user, { lead_id, to, from, twimlUrl, record = true }) => guard(async () => {
+  postCall: (user, { lead_id, to, from = null, twimlUrl = null, record = true }) => guard(async () => {
     const response = await base44.functions.invoke('communications', {
       action: 'create_call',
       params: { leadId: lead_id, to, from, twimlUrl, record }
