@@ -21,9 +21,9 @@ export default async function(req) {
     const action = body.action;
     const params = body.params || {};
 
-    // Admin-only provider health / configuration check
+    // Health is safe for agents; the detailed checklist remains admin-only.
     if (action === 'health_check' || body.adminCheck) {
-      if (user.role !== 'admin' && user.role !== 'super_admin' && user.role !== 'org_admin') {
+      if (body.adminCheck && user.role !== 'admin' && user.role !== 'super_admin' && user.role !== 'org_admin') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
       const mode = resolveProviderMode(secrets);
