@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { AuthError, ErrorState, EmptyState, ContextChips, TenantBadge } from '@/components/ContractState';
-import { Phone, Clock, AlertCircle, Headphones, Volume2 } from 'lucide-react';
+import { Phone, Clock, AlertCircle, Headphones, Volume2, PhoneCall, PhoneOff, Pause, Play, ArrowRightLeft } from 'lucide-react';
 
 const DISPOSITIONS = ['attempted', 'no_answer', 'voicemail_left', 'connected', 'qualified', 'unqualified', 'duplicate', 'wrong_number', 'do_not_call', 'warm_transfer_completed', 'appointment_booked', 'follow_up_required', 'closed', 'lost'];
 
@@ -111,6 +111,9 @@ function LeadContextPanel({ leadId, onSaved }) {
   const [notes, setNotes] = useState('');
   const [nextAction, setNextAction] = useState('');
   const [saving, setSaving] = useState(false);
+  const [call, setCall] = useState(null);
+  const [callLoading, setCallLoading] = useState(false);
+  const [telephony, setTelephony] = useState(null);
 
   const load = async () => {
     setLoading(true); setError(null);
@@ -120,7 +123,39 @@ function LeadContextPanel({ leadId, onSaved }) {
       setDisposition(c.lead.disposition || 'attempted');
     } catch (e) { setError(e); } finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, [leadId]);
+  useEffect(() => {
+    load();
+    api.getTelephonyStatus(user).then(setTelephony).catch(() => setTelephony({ mode: 'mock', healthy: true }));
+  }, [leadId]);
+
+  const startCall = async () => {
+    if (!ctx?.lead?.phone) return;
+    setCallLoading(true);
+    try {
+      const result = await api.postCall(user, { lead_id: leadId, to: ctx.lead.phone });
+      setCall(result);
+      toast({
+        title: result.mode === 'mock' ? 'Test call started' : 'Call started',
+        description: result.mode === 'mock' ? 'Mock mode — no real call was placed.' : 'The call is now being handled by Twilio.'
+      });
+    } catch (e) {
+      toast({ title: 'Call could not start', description: e.message, variant: 'destructive' });
+    } finally { setCallLoading(false); }
+  };
+
+  const endCall = async () => {
+    if (!call?.callId) return;
+    const result = await api.endCall(user, call.callId);
+    setCall({ ...call, ...result, status: result.status || 'completed' });
+  };
+
+  const toggleHold = async () => {
+    if (!call?.callId) return;
+    const result = call.status === 'on_hold'
+      ? await api.resumeCall(user, call.callId)
+      : await api.holdCall(user, call.callId);
+    setCall({ ...call, ...result });
+  };
 
   const save = async () => {
     setSaving(true);
@@ -188,6 +223,35 @@ function LeadContextPanel({ leadId, onSaved }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card className={telephony?.mode === 'production' ? 'border-emerald-300' : 'border-amber-300'}>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center justify-between">
+            <span className="flex items-center gap-2"><PhoneCall className="h-4 w-4" /> CRM calling</span>
+            <Badge variant="outline" className={telephony?.mode === 'production' ? 'text-emerald-700' : 'text-amber-700'}>
+              {telephony?.mode === 'production' ? 'Twilio live' : 'Test mode'}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {call ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">{call.status || 'in_progress'}</Badge>
+              <Button size="sm" variant="outline" onClick={toggleHold}>
+                {call.status === 'on_hold' ? <Play className="h-3.5 w-3.5 mr-1" /> : <Pause className="h-3.5 w-3.5 mr-1" />}
+                {call.status === 'on_hold' ? 'Resume' : 'Hold'}
+              </Button>
+              <Button size="sm" variant="destructive" onClick={endCall}><PhoneOff className="h-3.5 w-3.5 mr-1" />End call</Button>
+              <Button size="sm" variant="outline" onClick={() => toast({ title: 'Warm transfer ready', description: 'Select a destination after the live Flex workspace is connected.' })}><ArrowRightLeft className="h-3.5 w-3.5 mr-1" />Warm transfer</Button>
+            </div>
+          ) : (
+            <Button onClick={startCall} disabled={callLoading || !lead.phone}>
+              <PhoneCall className="h-4 w-4 mr-2" />{callLoading ? 'Starting…' : 'Call ' + lead.first_name}
+            </Button>
+          )}
+          <p className="text-xs text-muted-foreground">{telephony?.mode === 'production' ? 'Calls are routed through Twilio. Recording and webhook status will attach to this lead.' : 'Test mode is active. No real call is placed until the Twilio secret store is configured.'}</p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle className="text-sm">Log Disposition</CardTitle></CardHeader>
