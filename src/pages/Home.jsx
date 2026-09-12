@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter } from '@/lib/tenantContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Inbox, PhoneCall, CalendarCheck, TrendingUp, Clock, AlertCircle } from 'lucide-react';
+import { Inbox, CalendarCheck, TrendingUp, AlertCircle } from 'lucide-react';
 
 const STATUS_COLORS = {
   new: 'bg-blue-100 text-blue-700',
