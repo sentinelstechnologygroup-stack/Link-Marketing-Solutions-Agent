@@ -4,7 +4,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { ROLE_LABELS } from '@/lib/tenantContext';
 import {
   LayoutDashboard, Inbox, Building2, FileText, GitBranch, Calendar,
-  Phone, ShieldCheck, LogOut, Menu, X, Users, ClipboardList, Headphones, Eye
+  Phone, ShieldCheck, LogOut, Menu, X, Users, ClipboardList, Headphones, Eye,
+  Megaphone, Radio, Settings as SettingsIcon
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -13,6 +14,8 @@ const NAV_ITEMS = [
   { label: 'Lead Inbox', path: '/leads', icon: Inbox, roles: null },
   { label: 'Supervisor', path: '/supervisor', icon: Eye, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin', 'supervisor'] },
   { label: 'Appointments', path: '/appointments', icon: Calendar, roles: null },
+  { label: 'Campaigns', path: '/campaigns', icon: Megaphone, roles: null },
+  { label: 'Lead Sources', path: '/lead-sources', icon: Radio, roles: null },
   { label: 'Brands', path: '/brands', icon: Building2, roles: null },
   { label: 'Scripts', path: '/scripts', icon: FileText, roles: null },
   { label: 'Qualification Forms', path: '/qualification-forms', icon: ClipboardList, roles: null },
@@ -20,6 +23,7 @@ const NAV_ITEMS = [
   { label: 'Phone Numbers', path: '/phone-numbers', icon: Phone, roles: null },
   { label: 'Business Owners', path: '/business-owners', icon: Users, roles: null },
   { label: 'Audit Log', path: '/audit-log', icon: ShieldCheck, roles: ['admin', 'super_admin', 'org_admin', 'supervisor', 'auditor'] },
+  { label: 'Settings', path: '/settings', icon: SettingsIcon, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin'] },
 ];
 
 export default function Layout() {

@@ -27,6 +27,9 @@ import Appointments from '@/pages/Appointments';
 import PhoneNumbers from '@/pages/PhoneNumbers';
 import BusinessOwners from '@/pages/BusinessOwners';
 import AuditLog from '@/pages/AuditLog';
+import Settings from '@/pages/Settings';
+import Campaigns from '@/pages/Campaigns';
+import LeadSources from '@/pages/LeadSources';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -69,6 +72,9 @@ const AuthenticatedApp = () => {
           <Route path="/phone-numbers" element={<PhoneNumbers />} />
           <Route path="/business-owners" element={<BusinessOwners />} />
           <Route path="/audit-log" element={<AuditLog />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/campaigns" element={<Campaigns />} />
+          <Route path="/lead-sources" element={<LeadSources />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

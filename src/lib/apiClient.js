@@ -407,6 +407,24 @@ export const api = {
     return response?.data || response;
   }),
 
+  // ---------- 13a. Campaigns (CRUD) ----------
+  postCampaign: (user, payload) => guard(async () => base44.entities.Campaign.create(payload)),
+  putCampaign: (user, id, payload) => guard(async () => base44.entities.Campaign.update(id, payload)),
+
+  // ---------- 13b. Lead Sources ----------
+  getLeadSources: (user) => guard(async () => {
+    const items = applyBrandScope(user, await base44.entities.LeadSource.filter(scopeByOrg(user), '-created_date', 100));
+    return listResponse(user, items);
+  }),
+  postLeadSource: (user, payload) => guard(async () => base44.entities.LeadSource.create(payload)),
+  putLeadSource: (user, id, payload) => guard(async () => base44.entities.LeadSource.update(id, payload)),
+
+  // ---------- 13c. Admin Telephony Status ----------
+  getTelephonyAdminStatus: (user) => guard(async () => {
+    const response = await base44.functions.invoke('communications', { action: 'health_check', adminCheck: true });
+    return { ...(response?.data || response), tenant: tenant(user) };
+  }),
+
   // ---------- 13. Phone Numbers ----------
   getPhoneNumbers: (user) => guard(async () => {
     const items = applyBrandScope(user, await base44.entities.PhoneNumber.filter(scopeByOrg(user), '-created_date', 100));
