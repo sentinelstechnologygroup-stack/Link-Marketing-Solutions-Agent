@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { ROLE_LABELS, isAdminRole, canManageScripts, canManageBrands, canViewAuditLog } from '@/lib/tenantContext';
-import { base44 } from '@/api/base44Client';
+import { ROLE_LABELS } from '@/lib/tenantContext';
 import {
   LayoutDashboard, Inbox, Building2, FileText, GitBranch, Calendar,
   Phone, ShieldCheck, LogOut, Menu, X, Users, ClipboardList, Headphones, Eye
