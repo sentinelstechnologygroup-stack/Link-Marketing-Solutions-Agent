@@ -107,21 +107,62 @@ function mockHandle(action, params, mode) {
  * the package when running in mock mode.
  */
 async function productionHandle(action, params, mode, secrets) {
-  // Twilio REST calls would be made here using secrets.get("TWILIO_ACCOUNT_SID")
-  // and the auth token / API key. Because the live SDK + account provisioning
-  // is not yet available, we return a structured "not yet provisioned" result
-  // rather than making unauthenticated calls. This keeps the abstraction honest:
-  // the interface is implemented, the wiring is documented, and switching to
-  // live calls only requires completing the production checklist.
-  const sid = secrets.get("TWILIO_ACCOUNT_SID");
-  return {
-    ok: false,
-    mode,
-    action,
-    error: "production_provider_not_provisioned",
-    message: "Twilio credentials are present but live provisioning is not yet complete. Complete the production checklist and wire the Twilio REST calls in communicationsProvider.productionHandle.",
-    accountSid: sid ? sid.slice(0, 2) + "***" : null
+  const accountSid = secrets.get("TWILIO_ACCOUNT_SID");
+  const username = secrets.get("TWILIO_API_KEY") || accountSid;
+  const password = secrets.get("TWILIO_API_SECRET") || secrets.get("TWILIO_AUTH_TOKEN");
+  if (!accountSid || !username || !password) {
+    return { ok: false, mode, action, error: "twilio_credentials_missing", message: "Twilio credentials are not configured." };
+  }
+
+  const baseUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}`;
+  const auth = "Basic " + btoa(`${username}:${password}`);
+  const request = async (path, init = {}) => {
+    const response = await fetch(baseUrl + path, {
+      ...init,
+      headers: { Authorization: auth, ...(init.headers || {}) }
+    });
+    const text = await response.text();
+    let body;
+    try { body = JSON.parse(text); } catch { body = { raw: text }; }
+    if (!response.ok) {
+      return { ok: false, status: response.status, error: body?.message || "twilio_request_failed", details: body };
+    }
+    return { ok: true, data: body };
   };
+
+  if (action === "health_check") {
+    const result = await request(".json");
+    return result.ok
+      ? { ok: true, mode, provider: "twilio", status: "healthy", accountSid: accountSid.slice(0, 2) + "***" }
+      : { ok: false, mode, provider: "twilio", status: "unhealthy", ...result };
+  }
+
+  if (action === "create_call") {
+    const from = params.from || secrets.get("TWILIO_DEFAULT_FROM_NUMBER");
+    const twimlUrl = params.twimlUrl || secrets.get("TWILIO_VOICE_TWIML_URL");
+    if (!params.to || !from || !twimlUrl) {
+      return { ok: false, mode, error: "twilio_call_configuration_missing", message: "A destination number, default caller ID, and TWILIO_VOICE_TWIML_URL are required." };
+    }
+    const form = new URLSearchParams({
+      To: params.to,
+      From: from,
+      Url: twimlUrl,
+      Record: params.record === false ? "false" : "true",
+      StatusCallbackEvent: "initiated ringing answered completed",
+      ...(params.statusCallbackUrl || secrets.get("TWILIO_STATUS_CALLBACK_URL")
+        ? { StatusCallback: params.statusCallbackUrl || secrets.get("TWILIO_STATUS_CALLBACK_URL") }
+        : {}),
+      ...(params.recordingCallbackUrl || secrets.get("TWILIO_RECORDING_CALLBACK_URL")
+        ? { RecordingStatusCallback: params.recordingCallbackUrl || secrets.get("TWILIO_RECORDING_CALLBACK_URL") }
+        : {})
+    });
+    const result = await request("/Calls.json", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form });
+    return result.ok
+      ? { ok: true, mode, callId: result.data.sid, status: result.data.status, provider: "twilio", raw: { direction: result.data.direction } }
+      : { ok: false, mode, provider: "twilio", ...result };
+  }
+
+  return { ok: false, mode, action, error: "twilio_action_not_implemented", message: "This action is not yet connected to the Twilio REST API." };
 }
 
 /**
