@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowLeft, Phone, Calendar, FileText, ClipboardList, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Phone, Calendar, FileText, ClipboardList, AlertTriangle } from 'lucide-react';
 
 const DISPOSITIONS = ['attempted', 'no_answer', 'voicemail_left', 'connected', 'qualified', 'unqualified', 'duplicate', 'wrong_number', 'do_not_call', 'warm_transfer_completed', 'appointment_booked', 'appointment_completed', 'realtor_accepted', 'realtor_declined', 'business_owner_unavailable', 'follow_up_required', 'closed', 'lost'];
 
