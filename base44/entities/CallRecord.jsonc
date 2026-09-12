@@ -20,6 +20,15 @@
     "call_id": {
       "type": "string"
     },
+    "provider_status": {
+      "type": "string"
+    },
+    "recording_sid": {
+      "type": "string"
+    },
+    "transcript_id": {
+      "type": "string"
+    },
     "call_direction": {
       "type": "string",
       "enum": [
