@@ -44,15 +44,16 @@ export default async function(req) {
   if (eventType === 'recording-complete' || params.get('RecordingUrl')) {
     if (!call) return Response.json({ ok: true, ignored: 'call_not_found' });
     const recordingUrl = params.get('RecordingUrl');
-    const updated = await base44.asServiceRole.entities.CallRecord.update(call.id, {
-      recording_url: recordingUrl ? recordingUrl + '.mp3' : undefined,
-      recording_sid: params.get('RecordingSid') || undefined,
+    const recordingUpdate = {
       recording_metadata: {
         duration_seconds: Number(params.get('RecordingDuration') || 0),
         status: params.get('RecordingStatus') || 'completed',
         received_at: isoNow()
       }
-    });
+    };
+    if (recordingUrl) recordingUpdate.recording_url = recordingUrl + '.mp3';
+    if (params.get('RecordingSid')) recordingUpdate.recording_sid = params.get('RecordingSid');
+    const updated = await base44.asServiceRole.entities.CallRecord.update(call.id, recordingUpdate);
     return Response.json({ ok: true, event: 'recording-complete', call_id: updated.id });
   }
 
@@ -61,9 +62,11 @@ export default async function(req) {
   const status = params.get('CallStatus') || params.get('call_status') || 'unknown';
   const update = {
     provider_status: status,
-    call_end: ['completed', 'busy', 'failed', 'no-answer', 'canceled'].includes(status) ? isoNow() : undefined,
     duration_seconds: Number(params.get('CallDuration') || 0)
   };
+  if (['completed', 'busy', 'failed', 'no-answer', 'canceled'].includes(status)) {
+    update.call_end = isoNow();
+  }
   const updated = await base44.asServiceRole.entities.CallRecord.update(call.id, update);
   return Response.json({ ok: true, event: 'call-status', call_id: updated.id, provider_status: status });
 }
