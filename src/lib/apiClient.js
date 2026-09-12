@@ -379,24 +379,33 @@ export const api = {
   postNotificationPreferences: (user, prefs) => guard(async () => ({ tenant: tenant(user), saved: prefs })),
 
   // ---------- 12. Telephony (mock-safe) ----------
-  getTelephonyStatus: (user) => guard(async () => ({
-    tenant: tenant(user),
-    mode: 'mock',
-    healthy: true,
-    provider: null,
-    message: 'Mock mode — no live telephony provider configured. Test calls are simulated.',
-    checklist: [
-      'Set TWILIO_ACCOUNT_SID', 'Set TWILIO_AUTH_TOKEN', 'Set TWILIO_WORKSPACE_SID',
-      'Set TWILIO_FLEX_FLOW_SID', 'Set TWILIO_DEFAULT_FROM_NUMBER', 'Validate webhook signing secret'
-    ]
-  })),
-  postCall: (user, { lead_id }) => guard(async () => ({
-    call_id: `mock_${Date.now()}`, lead_id, status: 'connected', mode: 'mock', started_at: new Date().toISOString()
-  })),
-  endCall: (user, callId) => guard(async () => ({ call_id: callId, status: 'ended', mode: 'mock' })),
-  holdCall: (user, callId) => guard(async () => ({ call_id: callId, status: 'hold', mode: 'mock' })),
-  resumeCall: (user, callId) => guard(async () => ({ call_id: callId, status: 'connected', mode: 'mock' })),
-  warmTransfer: (user, callId, { to }) => guard(async () => ({ call_id: callId, status: 'warm_transfer', to, mode: 'mock' })),
+  getTelephonyStatus: (user) => guard(async () => {
+    const response = await base44.functions.invoke('communications', { action: 'health_check', adminCheck: true });
+    return response?.data || response;
+  }),
+  postCall: (user, { lead_id, to, from, twimlUrl, record = true }) => guard(async () => {
+    const response = await base44.functions.invoke('communications', {
+      action: 'create_call',
+      params: { leadId: lead_id, to, from, twimlUrl, record }
+    });
+    return response?.data || response;
+  }),
+  endCall: (user, callId) => guard(async () => {
+    const response = await base44.functions.invoke('communications', { action: 'end_call', params: { callId } });
+    return response?.data || response;
+  }),
+  holdCall: (user, callId) => guard(async () => {
+    const response = await base44.functions.invoke('communications', { action: 'hold_call', params: { callId } });
+    return response?.data || response;
+  }),
+  resumeCall: (user, callId) => guard(async () => {
+    const response = await base44.functions.invoke('communications', { action: 'resume_call', params: { callId } });
+    return response?.data || response;
+  }),
+  warmTransfer: (user, callId, { to }) => guard(async () => {
+    const response = await base44.functions.invoke('communications', { action: 'warm_transfer', params: { callId, transferTo: to } });
+    return response?.data || response;
+  }),
 
   // ---------- 13. Phone Numbers ----------
   getPhoneNumbers: (user) => guard(async () => {
