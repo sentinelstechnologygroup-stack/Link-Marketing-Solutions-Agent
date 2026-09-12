@@ -143,6 +143,25 @@ async function productionHandle(action, params, mode, secrets) {
       : { ok: false, mode, provider: "twilio", status: "unhealthy", ...result };
   }
 
+  if (action === "call_status" && params.callId) {
+    const result = await request(`/Calls/${encodeURIComponent(params.callId)}.json`);
+    return result.ok
+      ? { ok: true, mode, callId: result.data.sid, status: result.data.status, provider: "twilio" }
+      : { ok: false, mode, provider: "twilio", ...result };
+  }
+
+  if (action === "end_call" && params.callId) {
+    const form = new URLSearchParams({ Status: "completed" });
+    const result = await request(`/Calls/${encodeURIComponent(params.callId)}.json`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: form
+    });
+    return result.ok
+      ? { ok: true, mode, callId: result.data.sid, status: result.data.status, provider: "twilio" }
+      : { ok: false, mode, provider: "twilio", ...result };
+  }
+
   if (action === "create_call") {
     const from = params.from || secrets.get("TWILIO_DEFAULT_FROM_NUMBER");
     const twimlUrl = params.twimlUrl || secrets.get("TWILIO_VOICE_TWIML_URL");
