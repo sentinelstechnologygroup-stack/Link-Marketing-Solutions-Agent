@@ -43,6 +43,37 @@ export default async function(req) {
     }
 
     const result = await handleCommunication(action, params, secrets);
+
+    // Create the durable CRM call record immediately after Twilio/mock call
+    // creation so later status and recording webhooks can attach to the lead.
+    if (action === 'create_call' && result?.ok && result.callId && params.leadId) {
+      try {
+        const lead = await base44.entities.Lead.get(params.leadId);
+        await base44.asServiceRole.entities.CallRecord.create({
+          organization_id: lead.organization_id,
+          brand_id: lead.brand_id,
+          campaign_id: lead.campaign_id,
+          lead_id: lead.id,
+          agent_id: user.id,
+          call_id: result.callId,
+          provider_status: result.status || 'initiated',
+          call_direction: 'outbound',
+          caller_id_number: params.from || secrets.get('TWILIO_DEFAULT_FROM_NUMBER') || '',
+          called_number: params.to || '',
+          call_start: new Date().toISOString(),
+          disposition: 'attempted',
+          provider_mode: result.mode === 'production' ? 'production' : 'mock'
+        });
+      } catch (recordError) {
+        // Do not cancel an already-started call, but surface the linkage issue.
+        return Response.json({
+          ...result,
+          crmRecordCreated: false,
+          crmRecordError: recordError.message
+        });
+      }
+    }
+
     return Response.json(result);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
