@@ -2,28 +2,44 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { ROLE_LABELS } from '@/lib/tenantContext';
+import BrandMark from '@/components/BrandMark';
 import {
   LayoutDashboard, Inbox, Building2, FileText, GitBranch, Calendar,
   Phone, ShieldCheck, LogOut, Menu, X, Users, ClipboardList, Headphones, Eye,
-  Megaphone, Radio, Settings as SettingsIcon
+  Megaphone, Radio, Settings as SettingsIcon, Bell, Sparkles
 } from 'lucide-react';
 
-const NAV_ITEMS = [
-  { label: 'Dashboard', path: '/', icon: LayoutDashboard, roles: null },
-  { label: 'Agent Workspace', path: '/workspace', icon: Headphones, roles: null },
-  { label: 'Lead Inbox', path: '/leads', icon: Inbox, roles: null },
-  { label: 'Supervisor', path: '/supervisor', icon: Eye, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin', 'supervisor'] },
-  { label: 'Appointments', path: '/appointments', icon: Calendar, roles: null },
-  { label: 'Campaigns', path: '/campaigns', icon: Megaphone, roles: null },
-  { label: 'Lead Sources', path: '/lead-sources', icon: Radio, roles: null },
-  { label: 'Brands', path: '/brands', icon: Building2, roles: null },
-  { label: 'Scripts', path: '/scripts', icon: FileText, roles: null },
-  { label: 'Qualification Forms', path: '/qualification-forms', icon: ClipboardList, roles: null },
-  { label: 'Routing Rules', path: '/routing-rules', icon: GitBranch, roles: null },
-  { label: 'Phone Numbers', path: '/phone-numbers', icon: Phone, roles: null },
-  { label: 'Business Owners', path: '/business-owners', icon: Users, roles: null },
-  { label: 'Audit Log', path: '/audit-log', icon: ShieldCheck, roles: ['admin', 'super_admin', 'org_admin', 'supervisor', 'auditor'] },
-  { label: 'Settings', path: '/settings', icon: SettingsIcon, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin'] },
+const NAV_GROUPS = [
+  {
+    label: 'Work',
+    items: [
+      { label: 'Dashboard', path: '/', icon: LayoutDashboard, roles: null },
+      { label: 'Agent Workspace', path: '/workspace', icon: Headphones, roles: null },
+      { label: 'Lead Inbox', path: '/leads', icon: Inbox, roles: null },
+      { label: 'Supervisor', path: '/supervisor', icon: Eye, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin', 'supervisor'] },
+      { label: 'Appointments', path: '/appointments', icon: Calendar, roles: null },
+    ],
+  },
+  {
+    label: 'Programs',
+    items: [
+      { label: 'Campaigns', path: '/campaigns', icon: Megaphone, roles: null },
+      { label: 'Lead Sources', path: '/lead-sources', icon: Radio, roles: null },
+      { label: 'Brands', path: '/brands', icon: Building2, roles: null },
+      { label: 'Scripts', path: '/scripts', icon: FileText, roles: null },
+      { label: 'Qualification Forms', path: '/qualification-forms', icon: ClipboardList, roles: null },
+      { label: 'Routing Rules', path: '/routing-rules', icon: GitBranch, roles: null },
+    ],
+  },
+  {
+    label: 'Administration',
+    items: [
+      { label: 'Phone Numbers', path: '/phone-numbers', icon: Phone, roles: null },
+      { label: 'Business Owners', path: '/business-owners', icon: Users, roles: null },
+      { label: 'Audit Log', path: '/audit-log', icon: ShieldCheck, roles: ['admin', 'super_admin', 'org_admin', 'supervisor', 'auditor'] },
+      { label: 'Settings', path: '/settings', icon: SettingsIcon, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin'] },
+    ],
+  },
 ];
 
 export default function Layout() {
@@ -31,100 +47,120 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const role = user?.role || 'lead_response_agent';
   const roleLabel = ROLE_LABELS[role] || role;
 
-  const visibleItems = NAV_ITEMS.filter(item => {
-    if (!item.roles) return true;
-    return item.roles.includes(role);
-  });
+  const canSee = (item) => !item.roles || item.roles.includes(role);
+  const isActive = (item) => location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+  const currentItem = NAV_GROUPS.flatMap(group => group.items).find(isActive);
+  const initials = (user?.full_name || user?.email || 'Link Agent').split(/[\s@]+/).slice(0, 2).map(part => part[0]?.toUpperCase()).join('');
 
   const handleLogout = () => {
     logout(false);
     navigate('/login');
   };
 
-  const NavList = () => (
-    <nav className="flex flex-col gap-1 px-3">
-      {visibleItems.map(item => {
-        const Icon = item.icon;
-        const active = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+  const Navigation = () => (
+    <nav className="flex-1 overflow-y-auto px-3 pb-5" aria-label="CRM navigation">
+      {NAV_GROUPS.map(group => {
+        const items = group.items.filter(canSee);
+        if (!items.length) return null;
         return (
-          <Link
-            key={item.path}
-            to={item.path}
-            onClick={() => setMobileOpen(false)}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-              active
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-            }`}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            {item.label}
-          </Link>
+          <div key={group.label} className="mb-5">
+            <p className="mb-2 px-3 text-[9px] font-bold uppercase tracking-[.22em] text-[#d4af37]/75">{group.label}</p>
+            <div className="space-y-1">
+              {items.map(item => {
+                const Icon = item.icon;
+                const active = isActive(item);
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex min-h-10 items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${active ? 'bg-white/10 text-white shadow-sm' : 'text-white/55 hover:bg-white/[.06] hover:text-white'}`}
+                  >
+                    <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-[#d4af37]' : ''}`} />
+                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         );
       })}
     </nav>
   );
 
-  return (
-    <div className="min-h-screen bg-background flex">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r border-border bg-sidebar py-6">
-        <div className="px-6 mb-8">
-          <h1 className="font-heading text-lg font-semibold tracking-tight">Link Marketing</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Lead Response CRM</p>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <NavList />
-        </div>
-        <div className="px-3 mt-4 pt-4 border-t border-sidebar-border">
-          <div className="px-3 mb-2">
-            <p className="text-sm font-medium truncate">{user?.full_name || user?.email || 'User'}</p>
-            <p className="text-xs text-muted-foreground">{roleLabel}</p>
+  const Sidebar = ({ mobile = false }) => (
+    <aside className={`${mobile ? 'flex' : 'hidden lg:flex'} h-full w-[278px] shrink-0 flex-col border-r border-white/[.08] bg-[#071b1e] text-white`}>
+      <div className="flex h-[78px] shrink-0 items-center border-b border-white/[.08] px-6">
+        <BrandMark />
+      </div>
+      <div className="px-4 py-4">
+        <Link to="/workspace" onClick={() => setMobileOpen(false)} className="flex w-full items-center gap-3 rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 px-4 py-3 text-xs font-bold text-[#ead486] transition hover:bg-[#d4af37]/15">
+          <Sparkles className="h-4 w-4" /> Open agent workspace
+        </Link>
+      </div>
+      <Navigation />
+      <div className="shrink-0 border-t border-white/[.08] p-3">
+        <div className="flex items-center gap-3 rounded-xl px-3 py-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d4af37] text-xs font-bold text-[#071b1e]">{initials}</span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{user?.full_name || user?.email || 'Link Agent'}</p>
+            <p className="truncate text-[10px] text-white/42">{roleLabel}</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full transition-colors"
-          >
+          <button onClick={handleLogout} className="rounded-lg p-2 text-white/45 transition hover:bg-white/[.06] hover:text-white" aria-label="Sign out">
             <LogOut className="h-4 w-4" />
-            Sign out
           </button>
         </div>
-      </aside>
-
-      {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between border-b border-border bg-sidebar px-4 py-3">
-        <h1 className="font-heading text-base font-semibold">Link Marketing</h1>
-        <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-lg hover:bg-accent">
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
       </div>
+    </aside>
+  );
 
-      {/* Mobile drawer */}
+  return (
+    <div className="flex h-screen overflow-hidden bg-[#f4f1ea]">
+      <Sidebar />
+
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-20 bg-black/40" onClick={() => setMobileOpen(false)}>
-          <div className="absolute left-0 top-0 bottom-0 w-64 bg-sidebar py-6 pt-16" onClick={e => e.stopPropagation()}>
-            <NavList />
-            <div className="px-3 mt-4 pt-4 border-t border-sidebar-border">
-              <p className="text-sm font-medium px-3 mb-2 truncate">{user?.full_name || user?.email}</p>
-              <p className="text-xs text-muted-foreground px-3 mb-2">{roleLabel}</p>
-              <button onClick={handleLogout} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent w-full">
-                <LogOut className="h-4 w-4" /> Sign out
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <button aria-label="Close navigation" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-black/55 backdrop-blur-sm" />
+          <div className="relative h-full">
+            <Sidebar mobile />
+            <button onClick={() => setMobileOpen(false)} className="absolute right-3 top-3 rounded-lg p-2 text-white/70 hover:bg-white/10" aria-label="Close menu">
+              <X className="h-5 w-5" />
+            </button>
           </div>
         </div>
       )}
 
-      {/* Main content */}
-      <main className="flex-1 lg:pt-0 pt-14 overflow-x-hidden">
-        <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-8 max-w-7xl mx-auto">
-          <Outlet />
-        </div>
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex h-[70px] shrink-0 items-center justify-between border-b border-[#071b1e]/10 bg-[#fbfaf7]/95 px-4 backdrop-blur sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <button onClick={() => setMobileOpen(true)} className="rounded-lg border border-[#071b1e]/10 bg-white p-2 shadow-sm lg:hidden" aria-label="Open CRM navigation">
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[#243b3e]">{currentItem?.label || 'Link CRM'}</p>
+              <p className="hidden text-[10px] text-[#879192] sm:block">Lead response, qualification and routing operations</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-700 sm:inline-flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> System active
+            </span>
+            <button className="relative rounded-lg border border-[#071b1e]/10 bg-white p-2.5 shadow-sm" aria-label="Notifications">
+              <Bell className="h-4 w-4 text-[#334a4d]" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#d4af37]" />
+            </button>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#071b1e] text-[10px] font-bold text-white">{initials}</span>
+          </div>
+        </header>
+        <main className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
