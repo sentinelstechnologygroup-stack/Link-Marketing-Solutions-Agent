@@ -3,6 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 
 const AuthContext = createContext();
+const CRM_AUTH_BYPASS = Boolean(
+  import.meta.env.DEV ||
+  import.meta.env.VERCEL_ENV === 'preview' ||
+  import.meta.env.VITE_AGENT_CRM_BYPASS_AUTH === 'true'
+);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -18,6 +23,22 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
+    if (CRM_AUTH_BYPASS) {
+      setUser({
+        id: 'agent-crm-preview',
+        email: 'agent-preview@local.test',
+        role: 'super_admin',
+        organization_id: 'org_lms',
+        assigned_brand_ids: [],
+      });
+      setIsAuthenticated(true);
+      setIsLoadingAuth(false);
+      setIsLoadingPublicSettings(false);
+      setAuthChecked(true);
+      setAppPublicSettings({ id: 'agent-crm-preview', public_settings: {} });
+      return;
+    }
+
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
@@ -78,6 +99,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const checkUserAuth = async () => {
+    if (CRM_AUTH_BYPASS) {
+      setIsAuthenticated(true);
+      setIsLoadingAuth(false);
+      setAuthChecked(true);
+      return;
+    }
+
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
@@ -103,6 +131,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = (shouldRedirect = true) => {
+    if (CRM_AUTH_BYPASS) return;
     setUser(null);
     setIsAuthenticated(false);
     
@@ -116,6 +145,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
+    if (CRM_AUTH_BYPASS) return;
     // Use the SDK's redirectToLogin method
     base44.auth.redirectToLogin(window.location.href);
   };

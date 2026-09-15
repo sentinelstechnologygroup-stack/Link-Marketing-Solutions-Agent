@@ -3,7 +3,14 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  define: {
+    // Make Vercel's deployment environment available to the client so the
+    // temporary auth bypass can be restricted to Preview builds.
+    'import.meta.env.VERCEL_ENV': JSON.stringify(
+      process.env.VERCEL_ENV || (mode === 'development' ? 'development' : '')
+    ),
+  },
   plugins: [
     base44({
       // Support for legacy code that imports the base44 SDK with @/integrations, @/entities, etc.
@@ -16,4 +23,4 @@ export default defineConfig({
     }),
     react(),
   ]
-});
+}));
