@@ -72,6 +72,6 @@ export const firebaseClient = {
     loginWithProvider: async () => { throw new Error('Use the approved CRM sign-in method.'); },
   },
   entities: new Proxy({}, { get: (_target, entityName) => entityApi(entityName) }),
-  functions: { invoke: async () => { throw new Error('Legacy function calls must be migrated to authorized Firebase Functions.'); } },
+  functions: { invoke: async (name, data) => (await httpsCallable(functions, name)({ ...data, tenantId: getTenantId() })).data },
 };
 
