@@ -188,10 +188,17 @@ export const api = {
       notes, disposition, next_action, provider_mode,
     });
     const statusMap = { connected: 'connected', qualified: 'qualified', unqualified: 'unqualified', warm_transfer_completed: 'warm_transfer', appointment_booked: 'appointment_scheduled', closed: 'closed', lost: 'lost', duplicate: 'duplicate', do_not_call: 'do_not_call' };
-    const updated = await firebaseClient.entities.Lead.update(lead.id, {
-      disposition, lead_status: statusMap[disposition] || 'contact_attempted',
-      contact_attempts: (lead.contact_attempts || 0) + 1, last_contact_date: now,
-      next_action: next_action || null, qualification_data,
+    const updated = await firebaseClient.functions.invoke('transitionLead', {
+      leadId: lead.id,
+      status: statusMap[disposition] || 'contacted',
+      disposition,
+      note: notes || null,
+    });
+    await firebaseClient.entities.Lead.update(lead.id, {
+      contact_attempts: (lead.contact_attempts || 0) + 1,
+      last_contact_date: now,
+      next_action: next_action || null,
+      qualification_data,
     });
     return { call, lead: updated };
   }),
