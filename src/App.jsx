@@ -30,6 +30,13 @@ import AuditLog from '@/pages/AuditLog';
 import Settings from '@/pages/Settings';
 import Campaigns from '@/pages/Campaigns';
 import LeadSources from '@/pages/LeadSources';
+import AdminPortal from '@/pages/AdminPortal';
+import { isAdminRole } from '@/lib/tenantContext';
+
+function AdminPortalRoute() {
+  const { user } = useAuth();
+  return isAdminRole(user?.role) ? <AdminPortal /> : <Navigate to='/' replace />;
+}
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -75,6 +82,7 @@ const AuthenticatedApp = () => {
           <Route path="/settings" element={<Settings />} />
           <Route path="/campaigns" element={<Campaigns />} />
           <Route path="/lead-sources" element={<LeadSources />} />
+          <Route path="/admin" element={<AdminPortalRoute />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageScripts } from '@/lib/tenantContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,8 +27,8 @@ export default function QualificationForms() {
   const load = async () => {
     try {
       const [f, b] = await Promise.all([
-        base44.entities.QualificationForm.filter(buildTenantFilter(user), '-created_date', 100),
-        base44.entities.Brand.filter(buildTenantFilter(user), '-created_date', 50),
+        firebaseClient.entities.QualificationForm.filter(buildTenantFilter(user), '-created_date', 100),
+        firebaseClient.entities.Brand.filter(buildTenantFilter(user), '-created_date', 50),
       ]);
       setForms(f); setBrands(b);
     } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -86,8 +86,8 @@ function FormDialog({ form, brands, onClose, onSaved }) {
     setSaving(true);
     try {
       const payload = { name, brand_id: brandId, organization_id: brand?.organization_id, description, qualification_threshold: Number(threshold), status, questions };
-      if (form) { await base44.entities.QualificationForm.update(form.id, payload); toast({ title: 'Form updated' }); }
-      else { await base44.entities.QualificationForm.create(payload); toast({ title: 'Form created' }); }
+      if (form) { await firebaseClient.entities.QualificationForm.update(form.id, payload); toast({ title: 'Form updated' }); }
+      else { await firebaseClient.entities.QualificationForm.create(payload); toast({ title: 'Form created' }); }
       onSaved(); onClose();
     } catch (err) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setSaving(false); }
   };

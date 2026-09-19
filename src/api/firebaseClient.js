@@ -57,7 +57,7 @@ function entityApi(entityName) {
   };
 }
 
-export const base44 = {
+export const firebaseClient = {
   app: { getPublicSettings: async () => ({ id: 'firebase-agent-crm', public_settings: { backend: 'firebase' } }) },
   auth: {
     loginViaEmailPassword: async (email, password) => { await signInWithEmailAndPassword(auth, email.trim(), password); return getProfile(); },
@@ -74,3 +74,4 @@ export const base44 = {
   entities: new Proxy({}, { get: (_target, entityName) => entityApi(entityName) }),
   functions: { invoke: async () => { throw new Error('Legacy function calls must be migrated to authorized Firebase Functions.'); } },
 };
+

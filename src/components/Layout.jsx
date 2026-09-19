@@ -6,7 +6,7 @@ import BrandMark from '@/components/BrandMark';
 import {
   LayoutDashboard, Inbox, Building2, FileText, GitBranch, Calendar,
   Phone, ShieldCheck, LogOut, Menu, X, Users, ClipboardList, Headphones, Eye,
-  Megaphone, Radio, Settings as SettingsIcon, Bell, Sparkles
+  Megaphone, Radio, Settings as SettingsIcon, Bell, Sparkles, UserCog
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -34,6 +34,7 @@ const NAV_GROUPS = [
   {
     label: 'Administration',
     items: [
+      { label: 'Admin Portal', path: '/admin', icon: UserCog, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin'] },
       { label: 'Phone Numbers', path: '/phone-numbers', icon: Phone, roles: null },
       { label: 'Business Owners', path: '/business-owners', icon: Users, roles: null },
       { label: 'Audit Log', path: '/audit-log', icon: ShieldCheck, roles: ['admin', 'super_admin', 'org_admin', 'supervisor', 'auditor'] },
@@ -49,6 +50,7 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const role = user?.role || 'lead_response_agent';
   const roleLabel = ROLE_LABELS[role] || role;
+  const isPreviewAccess = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || import.meta.env.VITE_AGENT_CRM_BYPASS_AUTH === 'true';
 
   const canSee = (item) => !item.roles || item.roles.includes(role);
   const isActive = (item) => location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
@@ -145,9 +147,7 @@ export default function Layout() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-700 sm:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> System active
-            </span>
+            {isPreviewAccess && <span className="items-center gap-2 rounded-full border border-rose-300 bg-rose-100 px-3 py-1.5 text-[10px] font-bold text-rose-800 sm:inline-flex">Preview access only</span>}
             <button className="relative rounded-lg border border-[#071b1e]/10 bg-white p-2.5 shadow-sm" aria-label="Notifications">
               <Bell className="h-4 w-4 text-[#334a4d]" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#d4af37]" />
@@ -157,6 +157,7 @@ export default function Layout() {
         </header>
         <main className="min-h-0 flex-1 overflow-y-auto">
           <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
+            {isPreviewAccess && <div role="status" className="mb-5 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-900">PREVIEW ONLY: CRM data and actions are not confirmed live. Do not enter real customer information.</div>}
             <Outlet />
           </div>
         </main>
@@ -164,3 +165,4 @@ export default function Layout() {
     </div>
   );
 }
+

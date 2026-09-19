@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -50,14 +50,14 @@ export default function LeadDetail() {
 
   const loadAll = async () => {
     try {
-      const l = await base44.entities.Lead.get(id);
+      const l = await firebaseClient.entities.Lead.get(id);
       setLead(l);
       setDisposition(l.disposition || 'attempted');
       setQualAnswers(l.qualification_data || {});
 
       const [brandData, campaignData] = await Promise.all([
-        base44.entities.Brand.get(l.brand_id).catch(() => null),
-        l.campaign_id ? base44.entities.Campaign.get(l.campaign_id).catch(() => null) : Promise.resolve(null),
+        firebaseClient.entities.Brand.get(l.brand_id).catch(() => null),
+        l.campaign_id ? firebaseClient.entities.Campaign.get(l.campaign_id).catch(() => null) : Promise.resolve(null),
       ]);
       setBrand(brandData);
       setCampaign(campaignData);
@@ -65,10 +65,10 @@ export default function LeadDetail() {
       // Load approved script for campaign/brand
       let scriptData = null;
       if (campaignData?.default_script_id) {
-        scriptData = await base44.entities.Script.get(campaignData.default_script_id).catch(() => null);
+        scriptData = await firebaseClient.entities.Script.get(campaignData.default_script_id).catch(() => null);
       }
       if (!scriptData) {
-        const scripts = await base44.entities.Script.filter({ brand_id: l.brand_id, status: 'approved' }, '-version_number', 5);
+        const scripts = await firebaseClient.entities.Script.filter({ brand_id: l.brand_id, status: 'approved' }, '-version_number', 5);
         scriptData = scripts[0] || null;
       }
       setScript(scriptData);
@@ -76,19 +76,19 @@ export default function LeadDetail() {
       // Load qualification form
       let form = null;
       if (campaignData?.default_qualification_form_id) {
-        form = await base44.entities.QualificationForm.get(campaignData.default_qualification_form_id).catch(() => null);
+        form = await firebaseClient.entities.QualificationForm.get(campaignData.default_qualification_form_id).catch(() => null);
       }
       if (!form) {
-        const forms = await base44.entities.QualificationForm.filter({ brand_id: l.brand_id, status: 'active' }, '-created_date', 5);
+        const forms = await firebaseClient.entities.QualificationForm.filter({ brand_id: l.brand_id, status: 'active' }, '-created_date', 5);
         form = forms[0] || null;
       }
       setQualForm(form);
 
       // Calls, tasks, appointments
       const [callData, taskData, apptData] = await Promise.all([
-        base44.entities.CallRecord.filter({ lead_id: id }, '-call_start', 50),
-        base44.entities.FollowUpTask.filter({ lead_id: id }, 'due_date', 50),
-        base44.entities.Appointment.filter({ lead_id: id }, 'scheduled_start', 50),
+        firebaseClient.entities.CallRecord.filter({ lead_id: id }, '-call_start', 50),
+        firebaseClient.entities.FollowUpTask.filter({ lead_id: id }, 'due_date', 50),
+        firebaseClient.entities.Appointment.filter({ lead_id: id }, 'scheduled_start', 50),
       ]);
       setCalls(callData);
       setTasks(taskData);
@@ -97,7 +97,7 @@ export default function LeadDetail() {
       // Duplicate detection
       if (l.phone || l.email) {
         const dupFilter = { brand_id: l.brand_id };
-        const dupCandidates = await base44.entities.Lead.filter(dupFilter, '-created_date', 200);
+        const dupCandidates = await firebaseClient.entities.Lead.filter(dupFilter, '-created_date', 200);
         const dup = dupCandidates.find(x => x.id !== id && (
           (l.phone && x.phone === l.phone) || (l.email && x.email === l.email && l.email)
         ));
@@ -117,7 +117,7 @@ export default function LeadDetail() {
     setSavingCall(true);
     try {
       const now = new Date().toISOString();
-      await base44.entities.CallRecord.create({
+      await firebaseClient.entities.CallRecord.create({
         organization_id: lead.organization_id,
         brand_id: lead.brand_id,
         campaign_id: lead.campaign_id,
@@ -132,7 +132,7 @@ export default function LeadDetail() {
         next_action: nextAction,
         provider_mode: 'mock',
       });
-      await base44.entities.Lead.update(lead.id, {
+      await firebaseClient.entities.Lead.update(lead.id, {
         disposition,
         lead_status: mapDispositionToStatus(disposition),
         contact_attempts: (lead.contact_attempts || 0) + 1,
@@ -156,7 +156,7 @@ export default function LeadDetail() {
     if (!apptDate) { toast({ title: 'Pick a date', variant: 'destructive' }); return; }
     setSavingAppt(true);
     try {
-      await base44.entities.Appointment.create({
+      await firebaseClient.entities.Appointment.create({
         organization_id: lead.organization_id,
         brand_id: lead.brand_id,
         campaign_id: lead.campaign_id,
@@ -167,7 +167,7 @@ export default function LeadDetail() {
         timezone: 'America/Chicago',
         status: 'booked',
       });
-      await base44.entities.Lead.update(lead.id, { appointment_status: 'booked', lead_status: 'appointment_scheduled' });
+      await firebaseClient.entities.Lead.update(lead.id, { appointment_status: 'booked', lead_status: 'appointment_scheduled' });
       toast({ title: 'Appointment booked' });
       setApptDate('');
       loadAll();

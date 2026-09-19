@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { appParams } from '@/lib/app-params';
 
 const AuthContext = createContext();
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       setAuthError(null);
       
       try {
-        const publicSettings = await base44.app.getPublicSettings();
+        const publicSettings = await firebaseClient.app.getPublicSettings();
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated
@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const currentUser = await firebaseClient.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -137,17 +137,17 @@ export const AuthProvider = ({ children }) => {
     
     if (shouldRedirect) {
       // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
+      firebaseClient.auth.logout(window.location.href);
     } else {
       // Just remove the token without redirect
-      base44.auth.logout();
+      firebaseClient.auth.logout();
     }
   };
 
   const navigateToLogin = () => {
     if (CRM_AUTH_BYPASS) return;
     // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    firebaseClient.auth.redirectToLogin(window.location.href);
   };
 
   return (
@@ -176,3 +176,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

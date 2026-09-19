@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter } from '@/lib/tenantContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,8 +57,8 @@ export default function Home() {
       try {
         const filter = buildTenantFilter(user);
         const [leadData, brandData] = await Promise.all([
-          base44.entities.Lead.filter(filter, '-created_date', 200),
-          base44.entities.Brand.filter(buildTenantFilter(user), '-created_date', 50),
+          firebaseClient.entities.Lead.filter(filter, '-created_date', 200),
+          firebaseClient.entities.Brand.filter(buildTenantFilter(user), '-created_date', 50),
         ]);
         setLeads(leadData);
         setBrands(brandData);
@@ -243,3 +243,4 @@ export default function Home() {
     </div>
   );
 }
+

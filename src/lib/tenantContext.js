@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 
 /**
  * Tenant context helpers.
@@ -8,9 +8,10 @@ import { base44 } from '@/api/base44Client';
  */
 
 export const ROLE_LABELS = {
-  super_admin: 'Super Administrator',
-  org_admin: 'Organization Administrator',
-  brand_admin: 'Brand Administrator',
+  admin: 'Administrator',
+  super_admin: 'Administrator',
+  org_admin: 'Administrator',
+  brand_admin: 'Administrator',
   supervisor: 'Supervisor',
   lead_response_agent: 'Lead Response Agent',
   business_owner: 'Business Owner',
@@ -21,9 +22,10 @@ export const ROLE_LABELS = {
 };
 
 export const ROLE_HIERARCHY = {
+  admin: 100,
   super_admin: 100,
-  org_admin: 90,
-  brand_admin: 80,
+  org_admin: 100,
+  brand_admin: 100,
   supervisor: 70,
   lead_response_agent: 50,
   business_owner: 40,
@@ -34,19 +36,19 @@ export const ROLE_HIERARCHY = {
 };
 
 export function isAdminRole(role) {
-  return ['super_admin', 'org_admin', 'brand_admin'].includes(role);
+  return ['admin', 'super_admin', 'org_admin', 'brand_admin'].includes(role);
 }
 
 export function canManageScripts(role) {
-  return ['super_admin', 'org_admin', 'brand_admin', 'supervisor'].includes(role);
+  return isAdminRole(role) || role === 'supervisor';
 }
 
 export function canManageBrands(role) {
-  return ['super_admin', 'org_admin', 'brand_admin'].includes(role);
+  return isAdminRole(role);
 }
 
 export function canViewAuditLog(role) {
-  return ['super_admin', 'org_admin', 'auditor'].includes(role);
+  return isAdminRole(role) || role === 'auditor';
 }
 
 /**
@@ -79,3 +81,4 @@ export function buildTenantFilter(user, extra = {}) {
   }
   return filter;
 }
+

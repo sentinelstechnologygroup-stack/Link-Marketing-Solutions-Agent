@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageBrands } from '@/lib/tenantContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,8 +26,8 @@ export default function RoutingRules() {
   const load = async () => {
     try {
       const [r, b] = await Promise.all([
-        base44.entities.RoutingRule.filter(buildTenantFilter(user), '-created_date', 100),
-        base44.entities.Brand.filter(buildTenantFilter(user), '-created_date', 50),
+        firebaseClient.entities.RoutingRule.filter(buildTenantFilter(user), '-created_date', 100),
+        firebaseClient.entities.Brand.filter(buildTenantFilter(user), '-created_date', 50),
       ]);
       setRules(r); setBrands(b);
     } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -98,8 +98,8 @@ function RuleDialog({ rule, brands, onClose, onSaved }) {
     setSaving(true);
     try {
       const payload = { ...form, organization_id: brand?.organization_id, realtor_rotation: rotation };
-      if (rule) { await base44.entities.RoutingRule.update(rule.id, payload); toast({ title: 'Rule updated' }); }
-      else { await base44.entities.RoutingRule.create(payload); toast({ title: 'Rule created' }); }
+      if (rule) { await firebaseClient.entities.RoutingRule.update(rule.id, payload); toast({ title: 'Rule updated' }); }
+      else { await firebaseClient.entities.RoutingRule.create(payload); toast({ title: 'Rule created' }); }
       onSaved(); onClose();
     } catch (err) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setSaving(false); }
   };

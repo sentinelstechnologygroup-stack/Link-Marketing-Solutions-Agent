@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageBrands } from '@/lib/tenantContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,8 +23,8 @@ export default function PhoneNumbers() {
   const load = async () => {
     try {
       const [n, b] = await Promise.all([
-        base44.entities.PhoneNumber.filter(buildTenantFilter(user), '-created_date', 100),
-        base44.entities.Brand.filter(buildTenantFilter(user), '-created_date', 50),
+        firebaseClient.entities.PhoneNumber.filter(buildTenantFilter(user), '-created_date', 100),
+        firebaseClient.entities.Brand.filter(buildTenantFilter(user), '-created_date', 50),
       ]);
       setNumbers(n); setBrands(b);
     } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -71,7 +71,7 @@ function NumberDialog({ brands, onClose, onSaved }) {
     const brand = brands.find(b => b.id === form.brand_id);
     setSaving(true);
     try {
-      await base44.entities.PhoneNumber.create({ ...form, organization_id: brand?.organization_id });
+      await firebaseClient.entities.PhoneNumber.create({ ...form, organization_id: brand?.organization_id });
       toast({ title: 'Number added' }); onSaved(); onClose();
     } catch (err) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setSaving(false); }
   };

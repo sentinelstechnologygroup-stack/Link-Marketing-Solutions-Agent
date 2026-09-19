@@ -10,3 +10,4 @@ export default function GoogleIcon({ className = "w-5 h-5" }) {
     </svg>
   );
 }
+

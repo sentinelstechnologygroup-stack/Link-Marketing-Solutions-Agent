@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { firebaseClient } from "@/api/firebaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +29,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await base44.auth.register({ email, password });
+      await firebaseClient.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
@@ -42,9 +42,9 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      const result = await base44.auth.verifyOtp({ email, otpCode });
+      const result = await firebaseClient.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
+        firebaseClient.auth.setToken(result.access_token);
       }
       window.location.href = safeReturnTo();
     } catch (err) {
@@ -57,7 +57,7 @@ export default function Register() {
   const handleResend = async () => {
     setError("");
     try {
-      await base44.auth.resendOtp(email);
+      await firebaseClient.auth.resendOtp(email);
       toast({
         title: "Code sent",
         description: "Check your email for the new code.",
@@ -68,7 +68,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", safeReturnTo());
+    firebaseClient.auth.loginWithProvider("google", safeReturnTo());
   };
 
   if (showOtp) {
@@ -230,3 +230,4 @@ export default function Register() {
     </AuthLayout>
   );
 }
+

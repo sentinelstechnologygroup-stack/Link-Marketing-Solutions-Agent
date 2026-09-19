@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageBrands } from '@/lib/tenantContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,8 +25,8 @@ export default function Brands() {
   const load = async () => {
     try {
       const [b, o] = await Promise.all([
-        base44.entities.Brand.filter(buildTenantFilter(user), '-created_date', 100),
-        base44.entities.Organization.list(50),
+        firebaseClient.entities.Brand.filter(buildTenantFilter(user), '-created_date', 100),
+        firebaseClient.entities.Organization.list(50),
       ]);
       setBrands(b); setOrgs(o);
     } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -100,8 +100,8 @@ function BrandDialog({ brand, orgs, onClose, onSaved }) {
     if (!form.display_name || !form.organization_id) { toast({ title: 'Name and organization required', variant: 'destructive' }); return; }
     setSaving(true);
     try {
-      if (brand) { await base44.entities.Brand.update(brand.id, form); toast({ title: 'Brand updated' }); }
-      else { await base44.entities.Brand.create(form); toast({ title: 'Brand created' }); }
+      if (brand) { await firebaseClient.entities.Brand.update(brand.id, form); toast({ title: 'Brand updated' }); }
+      else { await firebaseClient.entities.Brand.create(form); toast({ title: 'Brand created' }); }
       onSaved(); onClose();
     } catch (err) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setSaving(false); }
   };

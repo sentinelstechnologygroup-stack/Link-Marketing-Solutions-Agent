@@ -125,7 +125,7 @@ function LeadContextPanel({ leadId, onSaved }) {
   };
   useEffect(() => {
     load();
-    api.getTelephonyStatus(user).then(setTelephony).catch(() => setTelephony({ mode: 'mock', healthy: true }));
+    api.getTelephonyStatus(user).then(setTelephony).catch(() => setTelephony({ mode: 'unavailable', healthy: false, warning: 'Telephony status could not be verified. Calls are disabled until the CRM backend is connected.' }));
   }, [leadId]);
 
   const startCall = async () => {
@@ -224,12 +224,12 @@ function LeadContextPanel({ leadId, onSaved }) {
         </Card>
       </div>
 
-      <Card className={telephony?.mode === 'production' ? 'border-emerald-300' : 'border-amber-300'}>
+      <Card className={telephony?.mode === 'production' ? 'border-emerald-300' : telephony?.mode === 'unavailable' ? 'border-rose-300 bg-rose-50' : 'border-amber-300'}>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center justify-between">
             <span className="flex items-center gap-2"><PhoneCall className="h-4 w-4" /> CRM calling</span>
-            <Badge variant="outline" className={telephony?.mode === 'production' ? 'text-emerald-700' : 'text-amber-700'}>
-              {telephony?.mode === 'production' ? 'Twilio live' : 'Test mode'}
+            <Badge variant="outline" className={telephony?.mode === 'production' ? 'text-emerald-700' : telephony?.mode === 'unavailable' ? 'border-rose-300 bg-rose-100 text-rose-800' : 'text-amber-700'}>
+              {telephony?.mode === 'production' ? 'Twilio live' : telephony?.mode === 'unavailable' ? 'Unavailable' : 'Test mode'}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -245,11 +245,11 @@ function LeadContextPanel({ leadId, onSaved }) {
               <Button size="sm" variant="outline" onClick={() => toast({ title: 'Warm transfer ready', description: 'Select a destination after the live Flex workspace is connected.' })}><ArrowRightLeft className="h-3.5 w-3.5 mr-1" />Warm transfer</Button>
             </div>
           ) : (
-            <Button onClick={startCall} disabled={callLoading || !lead.phone}>
+            <Button onClick={startCall} disabled={callLoading || !lead.phone || telephony?.mode === 'unavailable'}>
               <PhoneCall className="h-4 w-4 mr-2" />{callLoading ? 'Starting…' : 'Call ' + lead.first_name}
             </Button>
           )}
-          <p className="text-xs text-muted-foreground">{telephony?.mode === 'production' ? 'Calls are routed through Twilio. Recording and webhook status will attach to this lead.' : 'Test mode is active. No real call is placed until the Twilio secret store is configured.'}</p>
+          <p className="text-xs text-muted-foreground">{telephony?.mode === 'production' ? 'Calls are routed through Twilio. Recording and webhook status will attach to this lead.' : telephony?.mode === 'unavailable' ? telephony.warning : 'Test mode is active. No real call is placed until the Twilio secret store is configured.'}</p>
         </CardContent>
       </Card>
 
@@ -290,3 +290,4 @@ function StatCard({ label, value, icon: Icon, accent }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+

@@ -4,3 +4,4 @@ export const appParams = {
   functionsVersion: 'v2',
   appBaseUrl: '',
 };
+

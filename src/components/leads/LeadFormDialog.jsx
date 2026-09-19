@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -50,10 +50,10 @@ export default function LeadFormDialog({ open, onClose, brands, campaigns, onSav
         consent_language_version: brand?.consent_language_version || '1.0',
       };
       if (isEdit) {
-        await base44.entities.Lead.update(lead.id, payload);
+        await firebaseClient.entities.Lead.update(lead.id, payload);
         toast({ title: 'Lead updated' });
       } else {
-        await base44.entities.Lead.create(payload);
+        await firebaseClient.entities.Lead.create(payload);
         toast({ title: 'Lead created' });
       }
       onSaved?.();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter } from '@/lib/tenantContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,8 +18,8 @@ export default function Appointments() {
     (async () => {
       try {
         const [a, l] = await Promise.all([
-          base44.entities.Appointment.filter(buildTenantFilter(user), 'scheduled_start', 200),
-          base44.entities.Lead.filter(buildTenantFilter(user), '-created_date', 200),
+          firebaseClient.entities.Appointment.filter(buildTenantFilter(user), 'scheduled_start', 200),
+          firebaseClient.entities.Lead.filter(buildTenantFilter(user), '-created_date', 200),
         ]);
         setAppts(a); setLeads(l);
       } catch (e) { console.error(e); } finally { setLoading(false); }
