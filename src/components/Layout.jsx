@@ -50,7 +50,7 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const role = user?.role || 'lead_response_agent';
   const roleLabel = ROLE_LABELS[role] || role;
-  const isPreviewAccess = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || import.meta.env.VITE_AGENT_CRM_BYPASS_AUTH === 'true';
+  const isPreviewAccess = false;
 
   const canSee = (item) => !item.roles || item.roles.includes(role);
   const isActive = (item) => location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
