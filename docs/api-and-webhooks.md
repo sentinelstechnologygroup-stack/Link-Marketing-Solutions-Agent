@@ -8,7 +8,7 @@
 - **No secrets in frontend.** All privileged work happens server-side.
 - Auth: `Authorization: Bearer <jwt>` (managed by the platform SDK).
 - Tenant context is derived server-side from the authenticated user's profile
-  (`organization_id`, `assigned_brand_ids`, `role`). In a non-Base44 deployment these
+  (`organization_id`, `assigned_brand_ids`, `role`). In a non-legacy provider deployment these
   map to the following request headers, which the API validates against the token —
   the frontend never self-asserts them:
   - `X-Organization-Id`

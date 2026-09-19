@@ -2,9 +2,9 @@
 
 ## Scope and status
 
-This inventory covers only the Link Marketing Solutions Agent CRM. It is a preservation checklist for replacing the legacy Base44 service layer. The existing UI is not evidence that a workflow is connected or production-ready.
+This inventory covers only the Link Marketing Solutions Agent CRM. It is a preservation checklist for replacing the legacy legacy provider service layer. The existing UI is not evidence that a workflow is connected or production-ready.
 
-The repository currently contains Base44 SDK and Vite-plugin dependencies, a Base44 client, Base44-backed authentication, entity operations throughout the CRM, and Base44-hosted communications and Twilio webhook functions. The package manifest has no Firebase SDK, and this repository has no Firebase project configuration, Firestore rules, indexes, or Firebase Functions setup. The CRM therefore cannot safely complete its Firebase migration until it can use the shared backend contract and environment configuration.
+The repository currently contains legacy provider SDK and Vite-plugin dependencies, a legacy provider client, legacy provider-backed authentication, entity operations throughout the CRM, and legacy provider-hosted communications and Twilio webhook functions. The package manifest has no Firebase SDK, and this repository has no Firebase project configuration, Firestore rules, indexes, or Firebase Functions setup. The CRM therefore cannot safely complete its Firebase migration until it can use the shared backend contract and environment configuration.
 
 ## Existing CRM routes to preserve
 
@@ -32,7 +32,7 @@ The repository currently contains Base44 SDK and Vite-plugin dependencies, a Bas
 
 Preserve the fields, relationships, and behavior represented by these legacy entities until mapped to the shared contract: User, Organization, Brand, Campaign, LeadSource, Lead, FollowUpTask, CommunicationAlert, CallRecord, CallTranscript, CallQualityReview, Appointment, BusinessOwner, Script, QualificationForm, RoutingRule, PhoneNumber, and AuditLog.
 
-The CRM calls Base44 directly from both `src/lib/apiClient.js` and individual screens/components. The central client currently covers agent and supervisor workspaces, lead inbox/detail/disposition, brands, scripts, qualification forms, routing, duplicate detection/merge, follow-ups, callbacks, appointments, notifications, telephony actions, campaigns, lead sources, phone numbers, and admin summaries. Direct page-level calls also exist, so replacing only the central client would not remove the dependency.
+The CRM calls legacy provider directly from both `src/lib/apiClient.js` and individual screens/components. The central client currently covers agent and supervisor workspaces, lead inbox/detail/disposition, brands, scripts, qualification forms, routing, duplicate detection/merge, follow-ups, callbacks, appointments, notifications, telephony actions, campaigns, lead sources, phone numbers, and admin summaries. Direct page-level calls also exist, so replacing only the central client would not remove the dependency.
 
 Legacy server-side functionality to preserve or explicitly retire with approval:
 
@@ -42,7 +42,7 @@ Legacy server-side functionality to preserve or explicitly retire with approval:
 - The lead disposition flow that records a call and updates lead status/attempt counts.
 - Routing rotation, appointment status updates, duplicate marking, notifications, and audit visibility.
 
-## Base44-to-shared-backend parity checklist
+## legacy provider-to-shared-backend parity checklist
 
 For each item, record the canonical contract route/collection, authorization rules, implementation link, and test evidence before marking it replaced.
 
@@ -50,18 +50,18 @@ For each item, record the canonical contract route/collection, authorization rul
 | --- | --- | --- |
 | Identity and session | Invitation acceptance, password setup/reset, verified identity, disabled-user handling, revocation, and role/membership loading | Blocked on shared auth contract/configuration |
 | Tenant and brand scope | Organization membership and assigned-brand scope enforced by verified server identity; deny cross-tenant access | Blocked on shared authorization contract and rules |
-| Agent workspace | New-lead, callback, and follow-up queues; assigned brands/campaigns; lead age and status | Base44-backed; not migrated |
-| Lead inbox/detail | Search/filter, lead context, scripts/forms, calls/tasks/appointments, duplicate warnings | Base44-backed; not migrated |
-| Dispositions and qualification | Call record, disposition, qualification data, attempt count, next action, valid state transition, audit event | Base44-backed; not migrated |
-| Routing | Rule selection, round-robin/sequential behavior, ordered GCR primary/approved backup handling, timeout/acceptance audit | Base44-backed; server-side contract required |
-| Follow-ups/callbacks | Create/update/complete, due-date ordering, notifications, ownership and audit | Base44-backed; not migrated |
-| Appointments | Create, confirm, reschedule, cancel, attendance, timezone, and lead-state consistency | Base44-backed; atomic server behavior required |
-| Telephony | Status, create/end/hold/resume/transfer; explicit mock-vs-live state; no false success | Base44 function-backed; secure server replacement required |
-| Admin/configuration | Brands, campaigns, scripts, qualification forms, routing rules, phone numbers, business owners, lead sources | Base44-backed; not migrated |
+| Agent workspace | New-lead, callback, and follow-up queues; assigned brands/campaigns; lead age and status | legacy provider-backed; not migrated |
+| Lead inbox/detail | Search/filter, lead context, scripts/forms, calls/tasks/appointments, duplicate warnings | legacy provider-backed; not migrated |
+| Dispositions and qualification | Call record, disposition, qualification data, attempt count, next action, valid state transition, audit event | legacy provider-backed; not migrated |
+| Routing | Rule selection, round-robin/sequential behavior, ordered GCR primary/approved backup handling, timeout/acceptance audit | legacy provider-backed; server-side contract required |
+| Follow-ups/callbacks | Create/update/complete, due-date ordering, notifications, ownership and audit | legacy provider-backed; not migrated |
+| Appointments | Create, confirm, reschedule, cancel, attendance, timezone, and lead-state consistency | legacy provider-backed; atomic server behavior required |
+| Telephony | Status, create/end/hold/resume/transfer; explicit mock-vs-live state; no false success | legacy provider function-backed; secure server replacement required |
+| Admin/configuration | Brands, campaigns, scripts, qualification forms, routing rules, phone numbers, business owners, lead sources | legacy provider-backed; not migrated |
 | Audit and QA | Read authorization, append-only operational events, call-quality review, evidence links | Partial legacy entity coverage; shared event contract required |
 | Direct navigation | SPA fallback and refresh work for every listed route | Preview rewrite added; production deployment still needs release |
 | Preview identity | Clearly labeled, non-production access that cannot authorize production data/actions | Preview bypass exists; retain only in Preview/development |
-| Base44 removal | No Base44 package/plugin/client/import/env var/function runtime or Base44 network request remains | Not started; remove only after parity and migration evidence |
+| legacy provider removal | No legacy provider package/plugin/client/import/env var/function runtime or legacy provider network request remains | Not started; remove only after parity and migration evidence |
 
 ## Contract conflict to resolve before implementation
 
@@ -71,10 +71,10 @@ For each item, record the canonical contract route/collection, authorization rul
 
 1. Backend/Core publishes and versions the canonical identity, tenant, data, and operation contract, with emulator/staging access.
 2. Replace CRM authentication with invitation-based Firebase identity and server-verified CRM profile/membership loading. Keep public self-registration disabled.
-3. Replace the centralized API client and every direct screen-level Base44 call with the approved backend adapter. Preserve the legacy feature surface above.
+3. Replace the centralized API client and every direct screen-level legacy provider call with the approved backend adapter. Preserve the legacy feature surface above.
 4. Move routing decisions, lead transitions, appointment consistency, invitations, audit events, and telephony operations to authorized server-side functions/endpoints.
-5. Remove Base44 SDK/plugin/configuration and legacy functions after all parity rows have equivalent behavior and data migration/retention decisions are recorded.
-6. Prove role and tenant allow/deny behavior, every priority workflow, direct route refresh, mock/live separation, and Base44 absence against staging before production release.
+5. Remove legacy provider SDK/plugin/configuration and legacy functions after all parity rows have equivalent behavior and data migration/retention decisions are recorded.
+6. Prove role and tenant allow/deny behavior, every priority workflow, direct route refresh, mock/live separation, and legacy provider absence against staging before production release.
 
 ## Current blockers requiring the shared backend/account setup
 
