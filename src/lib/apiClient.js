@@ -356,14 +356,12 @@ export const api = {
     return listResponse(user, items);
   }),
   postAppointment: (user, payload) => guard(async () => {
-    const appt = await firebaseClient.entities.Appointment.create(payload);
-    await firebaseClient.entities.Lead.update(payload.lead_id, { appointment_status: 'booked', lead_status: 'appointment_scheduled' });
-    return appt;
+    return firebaseClient.functions.invoke('appointmentWorkflow', { action: 'create', data: payload });
   }),
-  confirmAppointment: (user, id) => guard(async () => firebaseClient.entities.Appointment.update(id, { status: 'confirmed' })),
-  rescheduleAppointment: (user, id, { scheduled_start }) => guard(async () => firebaseClient.entities.Appointment.update(id, { scheduled_start, status: 'booked' })),
-  cancelAppointment: (user, id) => guard(async () => firebaseClient.entities.Appointment.update(id, { status: 'canceled' })),
-  attendanceAppointment: (user, id, { status }) => guard(async () => firebaseClient.entities.Appointment.update(id, { status })),
+  confirmAppointment: (user, id) => guard(async () => firebaseClient.functions.invoke('appointmentWorkflow', { action: 'confirm', appointmentId: id })),
+  rescheduleAppointment: (user, id, { scheduled_start }) => guard(async () => firebaseClient.functions.invoke('appointmentWorkflow', { action: 'reschedule', appointmentId: id, data: { scheduled_start } })),
+  cancelAppointment: (user, id) => guard(async () => firebaseClient.functions.invoke('appointmentWorkflow', { action: 'cancel', appointmentId: id })),
+  attendanceAppointment: (user, id, { status }) => guard(async () => firebaseClient.functions.invoke('appointmentWorkflow', { action: 'attendance', appointmentId: id, data: { status } })),
 
   // ---------- 11. Notifications (in-app) ----------
   getNotifications: (user) => guard(async () => {
@@ -385,7 +383,7 @@ export const api = {
   }),
   postCall: (user, { lead_id, to, from = null, twimlUrl = null, record = true }) => guard(async () => {
     const response = await firebaseClient.functions.invoke('communications', {
-      action: 'create_call',
+      action: 'start_call',
       params: { leadId: lead_id, to, from, twimlUrl, record }
     });
     return response?.data || response;
