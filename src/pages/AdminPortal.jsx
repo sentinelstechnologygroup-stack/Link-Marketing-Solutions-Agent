@@ -13,7 +13,7 @@ const ADMIN_LINKS = [
   { to: '/scripts', label: 'Scripts & forms', detail: 'Maintain approved scripts and qualification forms.', icon: FileText },
   { to: '/routing-rules', label: 'Routing rules', detail: 'Review lead distribution and approved routing.', icon: GitBranch },
   { to: '/phone-numbers', label: 'Phone numbers', detail: 'Review communication number configuration.', icon: Phone },
-  { to: '/business-owners', label: 'Business owners', detail: 'Maintain approved owner and representative records.', icon: Users },
+  { to: '/business-owners', label: 'Client contacts', detail: 'Maintain approved client contacts, representatives, and service recipients.', icon: Users },
   { to: '/settings', label: 'Portal settings', detail: 'Review CRM and communications settings.', icon: Settings },
   { to: '/audit-log', label: 'Audit log', detail: 'Review recorded administrative and operational activity.', icon: ShieldCheck },
 ];

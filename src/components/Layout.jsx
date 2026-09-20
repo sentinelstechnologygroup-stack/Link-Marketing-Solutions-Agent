@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { ROLE_LABELS } from '@/lib/tenantContext';
+import { firebaseClient } from '@/api/firebaseClient';
 import BrandMark from '@/components/BrandMark';
 import {
   LayoutDashboard, Inbox, Building2, FileText, GitBranch, Calendar,
@@ -36,7 +37,7 @@ const NAV_GROUPS = [
     items: [
       { label: 'Admin Portal', path: '/admin', icon: UserCog, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin'] },
       { label: 'Phone Numbers', path: '/phone-numbers', icon: Phone, roles: null },
-      { label: 'Business Owners', path: '/business-owners', icon: Users, roles: null },
+      { label: 'Client Contacts', path: '/business-owners', icon: Users, roles: null },
       { label: 'Audit Log', path: '/audit-log', icon: ShieldCheck, roles: ['admin', 'super_admin', 'org_admin', 'supervisor', 'auditor'] },
       { label: 'Settings', path: '/settings', icon: SettingsIcon, roles: ['admin', 'super_admin', 'org_admin', 'brand_admin'] },
     ],
@@ -51,6 +52,7 @@ export default function Layout() {
   const role = user?.role || 'lead_response_agent';
   const roleLabel = ROLE_LABELS[role] || role;
   const isPreviewAccess = false;
+  const tenantOptions = user?.tenantOptions || [];
 
   const canSee = (item) => !item.roles || item.roles.includes(role);
   const isActive = (item) => location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
@@ -60,6 +62,14 @@ export default function Layout() {
   const handleLogout = () => {
     logout(false);
     navigate('/login');
+  };
+
+  const handleTenantChange = async (event) => {
+    const tenantId = event.target.value;
+    if (!tenantId || tenantId === user?.organization_id) return;
+    await firebaseClient.auth.switchTenant(tenantId);
+    setMobileOpen(false);
+    window.location.assign('/');
   };
 
   const Navigation = () => (
@@ -102,6 +112,17 @@ export default function Layout() {
         <Link to="/workspace" onClick={() => setMobileOpen(false)} className="flex w-full items-center gap-3 rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 px-4 py-3 text-xs font-bold text-[#ead486] transition hover:bg-[#d4af37]/15">
           <Sparkles className="h-4 w-4" /> Open agent workspace
         </Link>
+      </div>
+      <div className="px-4 pb-4">
+        <label htmlFor={mobile ? 'active-tenant-mobile' : 'active-tenant'} className="mb-1.5 block text-[9px] font-bold uppercase tracking-[.2em] text-white/45">Active client</label>
+        <select
+          id={mobile ? 'active-tenant-mobile' : 'active-tenant'}
+          value={user?.organization_id || ''}
+          onChange={handleTenantChange}
+          className="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2.5 text-xs font-semibold text-white outline-none focus:border-[#d4af37]"
+        >
+          {tenantOptions.map((tenant) => <option key={tenant.tenantId} value={tenant.tenantId} className="bg-[#071b1e] text-white">{tenant.name}</option>)}
+        </select>
       </div>
       <Navigation />
       <div className="shrink-0 border-t border-white/[.08] p-3">

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { Link } from 'react-router-dom';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
@@ -32,7 +33,11 @@ export default function Appointments() {
     <div className="space-y-6">
       <div><h1 className="text-2xl font-heading font-semibold tracking-tight">Appointments</h1><p className="text-muted-foreground text-sm mt-1">All scheduled appointments across your brands</p></div>
       {loading ? <Spinner/> : appts.length === 0 ? (
-        <Card><CardContent className="py-16 text-center text-muted-foreground">No appointments scheduled.</CardContent></Card>
+        <EmptyDataTable
+          title="Appointment schedule"
+          columns={['Prospect', 'Brand', 'Type', 'Scheduled', 'Time zone', 'Status']}
+          message="No appointments are scheduled yet. Booked appointments will populate this schedule automatically."
+        />
       ) : (
         <div className="space-y-2">
           {appts.map(a => (
@@ -53,3 +58,4 @@ export default function Appointments() {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+

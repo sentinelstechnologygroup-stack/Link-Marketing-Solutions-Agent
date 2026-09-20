@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { api, ApiError } from '@/lib/apiClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -55,7 +56,11 @@ export default function LeadSources() {
       </div>
 
       {data.sources.count === 0 ? (
-        <Card><CardContent className="py-16"><EmptyState message="No lead sources configured yet." /></CardContent></Card>
+        <EmptyDataTable
+          title="Lead sources"
+          columns={['Source', 'Brand', 'Channel', 'Campaign', 'Status', 'Updated']}
+          message="No lead sources are configured yet. Use New Source to connect the first source."
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {data.sources.items.map(s => (
@@ -145,3 +150,4 @@ function SourceDialog({ source, brands, onClose, onSaved }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+

@@ -15,7 +15,7 @@ export const ROLE_LABELS = {
   supervisor: 'Supervisor',
   lead_response_agent: 'Lead Response Agent',
   business_owner: 'Business Owner',
-  realtor: 'Realtor',
+  realtor: 'Licensed Professional',
   reporting_only: 'Reporting Only',
   auditor: 'Auditor',
   disabled: 'Disabled'

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageBrands } from '@/lib/tenantContext';
@@ -39,12 +40,19 @@ export default function RoutingRules() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-heading font-semibold tracking-tight">Routing Rules</h1><p className="text-muted-foreground text-sm mt-1">Lead assignment and realtor rotation strategies</p></div>
+        <div><h1 className="text-2xl font-heading font-semibold tracking-tight">Routing Rules</h1><p className="text-muted-foreground text-sm mt-1">Lead assignment and client-contact rotation strategies</p></div>
         {canManage && <Button onClick={() => { setEditing(null); setShowDialog(true); }}><Plus className="h-4 w-4 mr-2" /> New Rule</Button>}
       </div>
       {loading ? <Spinner/> : (
         <div className="space-y-3">
-          {rules.map(r => (
+                  {rules.length === 0 && (
+          <EmptyRecordCard
+            title="Routing rule"
+            fields={['Rule name', 'Brand', 'Priority', 'Destination']}
+            message="No routing rules are configured yet. Use New Rule to define lead delivery."
+          />
+        )}
+        {rules.map(r => (
             <Card key={r.id}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -116,9 +124,9 @@ function RuleDialog({ rule, brands, onClose, onSaved }) {
           <div><Label>Strategy</Label><select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.strategy} onChange={e => setForm({...form, strategy: e.target.value})}>{STRATEGIES.map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}</select></div>
           <div><Label>Acceptance period (min)</Label><Input type="number" value={form.acceptance_period_minutes} onChange={e => setForm({...form, acceptance_period_minutes: Number(e.target.value)})} /></div>
         </div>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.start_with_next_in_sequence} onChange={e => setForm({...form, start_with_next_in_sequence: e.target.checked})} /> Start next lead with next realtor in sequence</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.start_with_next_in_sequence} onChange={e => setForm({...form, start_with_next_in_sequence: e.target.checked})} /> Start next lead with the next contact in sequence</label>
         <div className="space-y-2">
-          <div className="flex items-center justify-between"><Label>Realtor rotation</Label><Button type="button" size="sm" variant="outline" onClick={addRotation}><Plus className="h-3.5 w-3.5 mr-1" />Add</Button></div>
+          <div className="flex items-center justify-between"><Label>Client contact rotation</Label><Button type="button" size="sm" variant="outline" onClick={addRotation}><Plus className="h-3.5 w-3.5 mr-1" />Add</Button></div>
           {rotation.map((rp, i) => (
             <div key={i} className="flex gap-2 items-center">
               <Badge variant="outline">{i + 1}</Badge>
@@ -135,3 +143,5 @@ function RuleDialog({ rule, brands, onClose, onSaved }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+
+

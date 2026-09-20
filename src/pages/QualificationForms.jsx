@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageScripts } from '@/lib/tenantContext';
@@ -45,7 +46,14 @@ export default function QualificationForms() {
       </div>
       {loading ? <Spinner/> : (
         <div className="space-y-3">
-          {forms.map(f => (
+                  {forms.length === 0 && (
+          <EmptyRecordCard
+            title="Qualification form"
+            fields={['Form name', 'Brand', 'Questions', 'Threshold']}
+            message="No qualification forms are configured yet. Use New Form to create one."
+          />
+        )}
+        {forms.map(f => (
             <Card key={f.id}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -133,3 +141,5 @@ function FormDialog({ form, brands, onClose, onSaved }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+
+

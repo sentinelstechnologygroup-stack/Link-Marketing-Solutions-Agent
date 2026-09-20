@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageBrands } from '@/lib/tenantContext';
@@ -44,7 +45,14 @@ export default function Brands() {
       </div>
       {loading ? <Spinner /> : (
         <div className="grid gap-4 md:grid-cols-2">
-          {brands.map(b => (
+                  {brands.length === 0 && (
+          <EmptyRecordCard
+            title="Brand profile"
+            fields={['Display name', 'Industry', 'Default greeting', 'Status']}
+            message="No brands are configured yet. Use New Brand to add the first client brand."
+          />
+        )}
+        {brands.map(b => (
             <Card key={b.id}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
@@ -142,3 +150,5 @@ function BrandDialog({ brand, orgs, onClose, onSaved }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+
+

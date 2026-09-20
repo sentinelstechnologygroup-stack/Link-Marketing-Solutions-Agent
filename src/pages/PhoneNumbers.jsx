@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageBrands } from '@/lib/tenantContext';
@@ -41,7 +42,14 @@ export default function PhoneNumbers() {
       </div>
       {loading ? <Spinner/> : (
         <div className="grid gap-3 md:grid-cols-2">
-          {numbers.map(n => (
+                  {numbers.length === 0 && (
+          <EmptyRecordCard
+            title="Phone number"
+            fields={['Number', 'Brand', 'Provider', 'Status']}
+            message="No phone numbers are configured yet. Use Add Number to connect one."
+          />
+        )}
+        {numbers.map(n => (
             <Card key={n.id}><CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div><p className="font-mono font-medium">{n.phone_number}</p><p className="text-xs text-muted-foreground">{brandMap[n.brand_id]?.display_name} · {n.number_type} · {n.provider}</p></div>
@@ -94,3 +102,5 @@ function NumberDialog({ brands, onClose, onSaved }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+
+

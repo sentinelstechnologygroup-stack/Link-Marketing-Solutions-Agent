@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { api, ApiError } from '@/lib/apiClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -61,7 +62,11 @@ export default function Campaigns() {
       </div>
 
       {data.campaigns.count === 0 ? (
-        <Card><CardContent className="py-16"><EmptyState message="No campaigns yet. Create one to start organizing leads." /></CardContent></Card>
+        <EmptyDataTable
+          title="Campaigns"
+          columns={['Campaign', 'Brand', 'Lead source', 'Status', 'Routing', 'Updated']}
+          message="No campaigns are configured yet. Use New Campaign to create the first workflow."
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {data.campaigns.items.map(c => (
@@ -165,3 +170,4 @@ function CampaignDialog({ campaign, brands, onClose, onSaved }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { api, ApiError } from '@/lib/apiClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -71,7 +72,14 @@ export default function AgentWorkspace() {
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle className="text-base">New Leads</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {data.new_leads.count === 0 ? <EmptyState message="No new leads waiting." /> :
+            {data.new_leads.count === 0 ? (
+              <EmptyDataTable
+                title="Lead queue"
+                columns={['Priority', 'Prospect', 'Contact', 'Received']}
+                message="No new leads are waiting. Assigned leads will appear here automatically."
+                rows={2}
+              />
+            ) :
               data.new_leads.items.map(lead => (
                 <button key={lead.id} onClick={() => setSelectedLeadId(lead.id)}
                   className={`w-full text-left rounded-lg border p-3 transition-colors ${selectedLeadId === lead.id ? 'border-primary bg-accent/50' : 'border-border hover:bg-accent/30'}`}>
@@ -290,4 +298,6 @@ function StatCard({ label, value, icon: Icon, accent }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+
+
 

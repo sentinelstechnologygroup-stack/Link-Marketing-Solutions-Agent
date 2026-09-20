@@ -24,13 +24,54 @@ const ENTITY_COLLECTIONS = {
   QualificationForm: 'qualificationForms', RoutingRule: 'routingRules', PhoneNumber: 'phoneNumbers',
   Report: 'reports', AuditLog: 'auditLogs', User: 'members',
 };
-const roleMap = { admin: 'super_admin', supervisor: 'supervisor', agent: 'lead_response_agent', auditor: 'auditor', customer: 'business_owner' };
-const getTenantId = () => profile?.memberships?.find((item) => item.active !== false)?.tenantId || null;
+const roleMap = { admin: 'super_admin', lms_super_admin: 'super_admin', supervisor: 'supervisor', agent: 'lead_response_agent', auditor: 'auditor' };
+const agentRoles = new Set(['super_admin', 'supervisor', 'lead_response_agent', 'auditor']);
+const ACTIVE_TENANT_KEY = 'lms-agent-active-tenant';
+const getTenantId = () => profile?.organization_id || null;
+
+function selectAssignment(assignments) {
+  const activeAssignments = (assignments || []).filter((item) => item.status === 'active' && item.tenantStatus !== 'disabled');
+  const storedTenantId = window.localStorage.getItem(ACTIVE_TENANT_KEY);
+  const selected = activeAssignments.find((item) => item.tenantId === storedTenantId) || activeAssignments[0] || null;
+  if (selected?.tenantId) window.localStorage.setItem(ACTIVE_TENANT_KEY, selected.tenantId);
+  return { activeAssignments, selected };
+}
+
+function applyAssignment(raw, claimedRole, assignments, selected) {
+  const assignedBrandIds = Array.isArray(selected?.brandIds) && selected.brandIds.length
+    ? selected.brandIds
+    : selected?.brandId ? [selected.brandId] : [];
+  return {
+    ...raw,
+    id: raw.uid,
+    role: claimedRole,
+    organization_id: selected?.tenantId || null,
+    tenantId: selected?.tenantId || null,
+    tenant_name: selected?.tenantName || selected?.tenantId || null,
+    assigned_brand_ids: assignedBrandIds,
+    agentAssignments: assignments,
+    tenantOptions: assignments.map((item) => ({
+      tenantId: item.tenantId,
+      name: item.tenantName || item.tenantId,
+      industry: item.industry || 'general',
+      role: item.role,
+      status: item.status,
+    })),
+  };
+}
 
 async function getProfile() {
   const raw = (await httpsCallable(functions, 'getMyProfile')()).data || {};
-  const membership = raw.memberships?.[0] || {};
-  profile = { ...raw, id: raw.uid, role: roleMap[membership.role] || membership.role, organization_id: membership.tenantId, tenantId: membership.tenantId, assigned_brand_ids: membership.brandIds || [], memberships: raw.memberships || [] };
+  const token = await auth.currentUser?.getIdTokenResult();
+  const claimedRole = raw.lmsSuperAdmin ? 'super_admin' : roleMap[token?.claims?.role] || token?.claims?.role;
+  if (!agentRoles.has(claimedRole)) {
+    throw Object.assign(new Error('This account is not authorized for the Agent CRM.'), { status: 403 });
+  }
+  const { activeAssignments, selected } = selectAssignment(raw.agentAssignments);
+  if (!selected) {
+    throw Object.assign(new Error('This Agent CRM account does not have an active tenant assignment.'), { status: 403 });
+  }
+  profile = applyAssignment(raw, claimedRole, activeAssignments, selected);
   return profile;
 }
 
@@ -61,7 +102,18 @@ export const firebaseClient = {
   app: { getPublicSettings: async () => ({ id: 'firebase-agent-crm', public_settings: { backend: 'firebase' } }) },
   auth: {
     loginViaEmailPassword: async (email, password) => { await signInWithEmailAndPassword(auth, email.trim(), password); return getProfile(); },
-    me: async () => auth.currentUser ? getProfile() : (() => { throw Object.assign(new Error('Authentication required'), { status: 401 }); })(),
+    me: async () => {
+      await auth.authStateReady();
+      if (auth.currentUser) return getProfile();
+      throw Object.assign(new Error('Authentication required'), { status: 401 });
+    },
+    switchTenant: async (tenantId) => {
+      const assignment = profile?.agentAssignments?.find((item) => item.tenantId === tenantId && item.status === 'active');
+      if (!assignment) throw Object.assign(new Error('This tenant is not assigned to your Agent CRM account.'), { status: 403 });
+      window.localStorage.setItem(ACTIVE_TENANT_KEY, tenantId);
+      profile = applyAssignment(profile, profile.role, profile.agentAssignments, assignment);
+      return profile;
+    },
     logout: async () => { profile = null; await signOut(auth); },
     redirectToLogin: () => { window.location.assign('/login'); },
     resetPasswordRequest: async (email) => sendPasswordResetEmail(auth, email.trim()),

@@ -86,16 +86,19 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       setAuthChecked(true);
     } catch (error) {
-      console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
       
-      // If user auth fails, it might be an expired token
+      // An unauthenticated visitor is a normal state. Public auth routes must
+      // remain renderable, while ProtectedRoute handles private-route redirects.
       if (error.status === 401 || error.status === 403) {
+        setAuthError(null);
+      } else {
+        console.error('User auth check failed:', error);
         setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
+          type: 'unknown',
+          message: error.message || 'Unable to verify your session'
         });
       }
     }

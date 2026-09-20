@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,7 +25,11 @@ export default function AuditLog() {
     <div className="space-y-6">
       <div><h1 className="text-2xl font-heading font-semibold tracking-tight">Audit Log</h1><p className="text-muted-foreground text-sm mt-1">System activity and access records</p></div>
       {loading ? <Spinner/> : logs.length === 0 ? (
-        <Card><CardContent className="py-16 text-center text-muted-foreground">No audit entries yet.</CardContent></Card>
+        <EmptyDataTable
+          title="Audit history"
+          columns={['Time', 'Actor', 'Action', 'Resource', 'Tenant', 'Result']}
+          message="No audit events are available for the selected scope. New events will appear here automatically."
+        />
       ) : (
         <div className="space-y-2">
           {logs.map(l => (
@@ -46,3 +51,4 @@ export default function AuditLog() {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+

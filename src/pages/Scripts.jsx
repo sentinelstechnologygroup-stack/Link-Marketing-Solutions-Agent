@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageScripts } from '@/lib/tenantContext';
@@ -52,7 +53,14 @@ export default function Scripts() {
       </div>
       {loading ? <Spinner/> : (
         <div className="space-y-3">
-          {scripts.map(s => (
+                  {scripts.length === 0 && (
+          <EmptyRecordCard
+            title="Call script"
+            fields={['Script name', 'Version', 'Brand', 'Approval status']}
+            message="No scripts are configured yet. Use New Script to build the first approved workflow."
+          />
+        )}
+        {scripts.map(s => (
             <Card key={s.id}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -138,3 +146,5 @@ function ScriptDialog({ script, brands, onClose, onSaved }) {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+
+

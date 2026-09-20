@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
 import { Link } from 'react-router-dom';
 import { api, ApiError } from '@/lib/apiClient';
 import { useAuth } from '@/lib/AuthContext';
@@ -85,7 +86,13 @@ export default function Leads() {
       {loading ? <Spinner /> :
         error ? (error instanceof ApiError && (error.status === 401 || error.status === 403)
           ? <AuthError error={error} onRetry={load} /> : <ErrorState error={error} onRetry={load} />) :
-        items.length === 0 ? <Card><CardContent className="py-16"><EmptyState message="No leads match your filters." /></CardContent></Card> :
+        items.length === 0 ? (
+          <EmptyDataTable
+            title="Lead pipeline"
+            columns={['Priority', 'Prospect', 'Brand / Campaign', 'Received', 'Status', 'Qualification']}
+            message="No leads match the current filters. Incoming leads will populate this pipeline automatically."
+          />
+        ) :
         <div className="space-y-2">
           {items.map(lead => {
             const age = Math.round((Date.now() - new Date(lead.created_date).getTime()) / 60000);
@@ -121,3 +128,4 @@ export default function Leads() {
 }
 
 function Spinner() { return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>; }
+

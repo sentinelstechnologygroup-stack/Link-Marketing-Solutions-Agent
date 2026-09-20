@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { ArrowLeft, Phone, Calendar, FileText, ClipboardList, AlertTriangle } from 'lucide-react';
 
-const DISPOSITIONS = ['attempted', 'no_answer', 'voicemail_left', 'connected', 'qualified', 'unqualified', 'duplicate', 'wrong_number', 'do_not_call', 'warm_transfer_completed', 'appointment_booked', 'appointment_completed', 'realtor_accepted', 'realtor_declined', 'business_owner_unavailable', 'follow_up_required', 'closed', 'lost'];
+const DISPOSITIONS = ['attempted', 'no_answer', 'voicemail_left', 'connected', 'qualified', 'unqualified', 'duplicate', 'wrong_number', 'do_not_call', 'warm_transfer_completed', 'appointment_booked', 'appointment_completed', 'contact_accepted', 'contact_declined', 'contact_unavailable', 'follow_up_required', 'closed', 'lost'];
 
 const STATUS_COLORS = {
   new: 'bg-blue-100 text-blue-700', qualified: 'bg-emerald-100 text-emerald-700',
