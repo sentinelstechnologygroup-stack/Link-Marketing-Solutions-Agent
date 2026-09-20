@@ -71,11 +71,12 @@ function applyAssignment(raw, claimedRole, assignments, selected) {
 async function getProfile() {
   const raw = (await httpsCallable(functions, 'getMyProfile')()).data || {};
   const token = await auth.currentUser?.getIdTokenResult();
-  const claimedRole = raw.lmsSuperAdmin ? 'super_admin' : roleMap[token?.claims?.role] || token?.claims?.role;
+  const { activeAssignments, selected } = selectAssignment(raw.agentAssignments);
+  const assignmentRole = roleMap[selected?.role] || selected?.role;
+  const claimedRole = raw.lmsSuperAdmin ? 'super_admin' : roleMap[token?.claims?.role] || token?.claims?.role || assignmentRole;
   if (!agentRoles.has(claimedRole)) {
     throw Object.assign(new Error('This account is not authorized for the Agent CRM.'), { status: 403 });
   }
-  const { activeAssignments, selected } = selectAssignment(raw.agentAssignments);
   if (!selected) {
     throw Object.assign(new Error('This Agent CRM account does not have an active tenant assignment.'), { status: 403 });
   }
