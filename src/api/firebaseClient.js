@@ -2,6 +2,7 @@ import { getApp, getApps, initializeApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { normalizeEntityRow, normalizeEntityWrite } from './firebaseEntityContract';
 
 const env = (name) => import.meta.env?.[name] || '';
 const firebaseConfig = {
@@ -88,7 +89,7 @@ async function entityRows(entityName, filter = {}, sort = '', pageSize = 200) {
   const collectionName = ENTITY_COLLECTIONS[entityName];
   if (!collectionName || collectionName === 'members') return [];
   const result = await httpsCallable(functions, 'getAgentCollection')({ tenantId: getTenantId(), collectionName, limit: pageSize });
-  let rows = result.data?.rows || [];
+  let rows = (result.data?.rows || []).map((row) => normalizeEntityRow(collectionName, row));
   rows = rows.filter((row) => Object.entries(filter || {}).every(([key, expected]) => expected && typeof expected === 'object' && '$in' in expected ? expected.$in.includes(row[key]) : expected == null || row[key] === expected));
   const field = String(sort || '').replace(/^-/, '');
   if (field) rows.sort((a, b) => String(a[field] || '').localeCompare(String(b[field] || '')) * (String(sort).startsWith('-') ? -1 : 1));
@@ -101,8 +102,8 @@ function entityApi(entityName) {
     list: (limit) => entityRows(entityName, {}, '', limit || 200),
     filter: (filter, sort, limit) => entityRows(entityName, filter, sort, limit || 200),
     get: async (id) => (await entityRows(entityName, {}, '', 500)).find((row) => row.id === id) || null,
-    create: async (data) => (await httpsCallable(functions, 'createAgentRecord')({ tenantId: getTenantId(), collectionName, data })).data,
-    update: async (id, data) => (await httpsCallable(functions, 'updateAgentRecord')({ tenantId: getTenantId(), collectionName, recordId: id, data })).data,
+    create: async (data) => normalizeEntityRow(collectionName, (await httpsCallable(functions, 'createAgentRecord')({ tenantId: getTenantId(), collectionName, data: normalizeEntityWrite(collectionName, data) })).data),
+    update: async (id, data) => normalizeEntityRow(collectionName, (await httpsCallable(functions, 'updateAgentRecord')({ tenantId: getTenantId(), collectionName, recordId: id, data: normalizeEntityWrite(collectionName, data) })).data),
     delete: async () => { throw new Error('CRM deletion requires an approved server workflow.'); },
   };
 }
