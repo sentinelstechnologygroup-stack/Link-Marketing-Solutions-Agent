@@ -64,8 +64,9 @@ export default function LeadDetail() {
 
       // Load approved script for campaign/brand
       let scriptData = null;
-      if (campaignData?.default_script_id) {
-        scriptData = await firebaseClient.entities.Script.get(campaignData.default_script_id).catch(() => null);
+      const scriptId = campaignData?.default_script_id || campaignData?.defaultScriptId || l.script_set_id || l.scriptSetId;
+      if (scriptId) {
+        scriptData = await firebaseClient.entities.Script.get(scriptId).catch(() => null);
       }
       if (!scriptData) {
         const scripts = await firebaseClient.entities.Script.filter({ brand_id: l.brand_id, status: 'approved' }, '-version_number', 5);
@@ -75,8 +76,9 @@ export default function LeadDetail() {
 
       // Load qualification form
       let form = null;
-      if (campaignData?.default_qualification_form_id) {
-        form = await firebaseClient.entities.QualificationForm.get(campaignData.default_qualification_form_id).catch(() => null);
+      const qualificationFormId = campaignData?.default_qualification_form_id || campaignData?.defaultQualificationFormId || l.qualification_form_id || l.qualificationFormId;
+      if (qualificationFormId) {
+        form = await firebaseClient.entities.QualificationForm.get(qualificationFormId).catch(() => null);
       }
       if (!form) {
         const forms = await firebaseClient.entities.QualificationForm.filter({ brand_id: l.brand_id, status: 'active' }, '-created_date', 5);
