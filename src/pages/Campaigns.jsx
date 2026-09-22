@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
+import { EmptyDataTable } from '@/components/CollectionStructure';
 import { api, ApiError } from '@/lib/apiClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { AuthError, ErrorState, EmptyState, TenantBadge } from '@/components/ContractState';
+import { AuthError, ErrorState, TenantBadge } from '@/components/ContractState';
 import { Plus, Pencil, Megaphone } from 'lucide-react';
 
 const STATUS_COLORS = {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
+import { EmptyDataTable } from '@/components/CollectionStructure';
 import { Link } from 'react-router-dom';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';

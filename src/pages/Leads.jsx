@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
+import { EmptyDataTable } from '@/components/CollectionStructure';
 import { Link } from 'react-router-dom';
 import { api, ApiError } from '@/lib/apiClient';
 import { useAuth } from '@/lib/AuthContext';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Plus, Clock } from 'lucide-react';
 import LeadFormDialog from '@/components/leads/LeadFormDialog';
-import { AuthError, ErrorState, EmptyState, BrandChip, TenantBadge } from '@/components/ContractState';
+import { AuthError, ErrorState, BrandChip, TenantBadge } from '@/components/ContractState';
 
 const STATUS_COLORS = {
   new: 'bg-blue-100 text-blue-700', contact_attempted: 'bg-amber-100 text-amber-700',

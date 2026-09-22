@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
+import { EmptyDataTable } from '@/components/CollectionStructure';
 import { api, ApiError } from '@/lib/apiClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { AuthError, ErrorState, EmptyState, TenantBadge } from '@/components/ContractState';
+import { AuthError, ErrorState, TenantBadge } from '@/components/ContractState';
 import { Plus, Pencil, Radio } from 'lucide-react';
 
 const SOURCE_TYPES = ['website_form', 'landing_page', 'ppc', 'social_media', 'crm_integration', 'phone_call', 'sms_reply', 'manual_entry', 'api_webhook'];

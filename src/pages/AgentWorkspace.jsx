@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
+import { EmptyDataTable } from '@/components/CollectionStructure';
 import { api, ApiError } from '@/lib/apiClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

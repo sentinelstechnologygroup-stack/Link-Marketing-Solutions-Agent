@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { EmptyDataTable, EmptyRecordCard } from '@/components/CollectionStructure';
+import { EmptyRecordCard } from '@/components/CollectionStructure';
 import { firebaseClient } from '@/api/firebaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { buildTenantFilter, canManageBrands } from '@/lib/tenantContext';
