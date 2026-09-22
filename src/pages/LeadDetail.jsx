@@ -129,6 +129,7 @@ export default function LeadDetail() {
         call_start: now,
         call_end: now,
         duration_seconds: 0,
+        status: 'completed',
         notes: callNotes,
         disposition,
         next_action: nextAction,
@@ -158,15 +159,21 @@ export default function LeadDetail() {
     if (!apptDate) { toast({ title: 'Pick a date', variant: 'destructive' }); return; }
     setSavingAppt(true);
     try {
+      const scheduledStart = new Date(apptDate);
+      const scheduledEnd = new Date(scheduledStart.getTime() + 30 * 60 * 1000);
+      const appointmentLabel = apptType.replace(/_/g, ' ');
       await firebaseClient.entities.Appointment.create({
         organization_id: lead.organization_id,
         brand_id: lead.brand_id,
         campaign_id: lead.campaign_id,
         lead_id: lead.id,
         agent_id: user.id,
+        title: `${brand?.display_name || 'Client'} ${appointmentLabel}`,
         appointment_type: apptType,
-        scheduled_start: new Date(apptDate).toISOString(),
+        scheduled_start: scheduledStart.toISOString(),
+        scheduled_end: scheduledEnd.toISOString(),
         timezone: 'America/Chicago',
+        calendar_provider: 'manual',
         status: 'booked',
       });
       await firebaseClient.entities.Lead.update(lead.id, { appointment_status: 'booked', lead_status: 'appointment_scheduled' });
