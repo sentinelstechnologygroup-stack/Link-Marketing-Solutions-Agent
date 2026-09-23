@@ -180,7 +180,6 @@ export default function LeadDetail() {
         calendar_provider: 'manual',
         status: 'booked',
       });
-      await firebaseClient.entities.Lead.update(lead.id, { appointment_status: 'booked', lead_status: 'appointment_scheduled' });
       toast({ title: 'Appointment booked' });
       setApptDate('');
       loadAll();

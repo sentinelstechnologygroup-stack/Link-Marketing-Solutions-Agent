@@ -83,7 +83,10 @@ export function normalizeEntityRow(collectionName, value) {
   row.created_date ??= asIsoDate(row.createdAt) || row.created_date;
   row.updated_date ??= asIsoDate(row.updatedAt) || row.updated_date;
   row.received_date ??= asIsoDate(row.receivedAt) || row.received_date;
-  row.lead_status ??= row.status;
+  if (collectionName === 'leads') {
+    row.status ??= row.lead_status;
+    row.lead_status ??= row.status;
+  }
   row.first_name ??= row.firstName;
   row.last_name ??= row.lastName;
 
@@ -106,6 +109,7 @@ export function normalizeEntityWrite(collectionName, value) {
   });
   if (data.firstName === undefined && data.first_name !== undefined) data.firstName = data.first_name;
   if (data.lastName === undefined && data.last_name !== undefined) data.lastName = data.last_name;
+  if (collectionName === 'leads' && data.status === undefined && data.lead_status !== undefined) data.status = data.lead_status;
   if (collectionName === 'brands' && data.name === undefined && data.display_name !== undefined) data.name = data.display_name;
   if (collectionName === 'leadSources' && data.type === undefined && data.source_type !== undefined) data.type = data.source_type;
   if (collectionName === 'campaigns') {

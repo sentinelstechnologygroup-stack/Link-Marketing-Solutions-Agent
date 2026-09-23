@@ -102,7 +102,13 @@ function entityApi(entityName) {
     list: (limit) => entityRows(entityName, {}, '', limit || 200),
     filter: (filter, sort, limit) => entityRows(entityName, filter, sort, limit || 200),
     get: async (id) => (await entityRows(entityName, {}, '', 500)).find((row) => row.id === id) || null,
-    create: async (data) => normalizeEntityRow(collectionName, (await httpsCallable(functions, 'createAgentRecord')({ tenantId: getTenantId(), collectionName, data: normalizeEntityWrite(collectionName, data) })).data),
+    create: async (data) => {
+      const normalizedData = normalizeEntityWrite(collectionName, data);
+      const response = collectionName === 'appointments'
+        ? await httpsCallable(functions, 'appointmentWorkflow')({ tenantId: getTenantId(), action: 'create', data: normalizedData })
+        : await httpsCallable(functions, 'createAgentRecord')({ tenantId: getTenantId(), collectionName, data: normalizedData });
+      return normalizeEntityRow(collectionName, response.data);
+    },
     update: async (id, data) => normalizeEntityRow(collectionName, (await httpsCallable(functions, 'updateAgentRecord')({ tenantId: getTenantId(), collectionName, recordId: id, data: normalizeEntityWrite(collectionName, data) })).data),
     delete: async () => { throw new Error('CRM deletion requires an approved server workflow.'); },
   };
