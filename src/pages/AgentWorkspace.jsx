@@ -122,6 +122,7 @@ function LeadContextPanel({ leadId, onSaved }) {
   const [call, setCall] = useState(null);
   const [callLoading, setCallLoading] = useState(false);
   const [telephony, setTelephony] = useState(null);
+  const [recordingConsent, setRecordingConsent] = useState(false);
 
   const load = async () => {
     setLoading(true); setError(null);
@@ -140,7 +141,7 @@ function LeadContextPanel({ leadId, onSaved }) {
     if (!ctx?.lead?.phone) return;
     setCallLoading(true);
     try {
-      const result = await api.postCall(user, { lead_id: leadId, to: ctx.lead.phone });
+      const result = await api.postCall(user, { lead_id: leadId, to: ctx.lead.phone, recording_consent: recordingConsent });
       setCall(result);
       toast({
         title: result.mode === 'mock' ? 'Test call started' : 'Call started',
@@ -184,6 +185,7 @@ function LeadContextPanel({ leadId, onSaved }) {
   if (!ctx) return null;
 
   const { lead, brand, campaign, script, form, calls, duplicates, lead_age_minutes } = ctx;
+  const recordingPolicy = telephony?.recordingPolicy || 'do_not_record';
 
   return (
     <div className="space-y-4">
@@ -242,6 +244,14 @@ function LeadContextPanel({ leadId, onSaved }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          {!call && telephony?.mode === 'production' && recordingPolicy === 'record_on_consent' && (
+            <label className="flex items-start gap-2 rounded-md border border-border p-3 text-sm">
+              <input type="checkbox" className="mt-1" checked={recordingConsent} onChange={(event) => setRecordingConsent(event.target.checked)} />
+              <span><span className="font-medium">Recording consent confirmed</span><span className="block text-xs text-muted-foreground">Select only after the approved disclosure is read and the prospect affirmatively agrees.</span></span>
+            </label>
+          )}
+          {!call && telephony?.mode === 'production' && recordingPolicy === 'record_all' && <p className="text-xs text-amber-700">This Brand is configured to record calls. Read the approved recording disclosure before connecting.</p>}
+          {!call && telephony?.mode === 'production' && recordingPolicy === 'do_not_record' && <p className="text-xs text-muted-foreground">Recording is disabled for this Brand.</p>}
           {call ? (
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">{call.status || 'in_progress'}</Badge>

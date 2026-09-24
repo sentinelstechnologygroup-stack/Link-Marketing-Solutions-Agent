@@ -388,10 +388,10 @@ export const api = {
     const response = await firebaseClient.functions.invoke('communications', { action: 'health_check' });
     return response?.data || response;
   }),
-  postCall: (user, { lead_id, to, from = null, twimlUrl = null, record = true }) => guard(async () => {
+  postCall: (user, { lead_id, to, recording_consent = false }) => guard(async () => {
     const response = await firebaseClient.functions.invoke('communications', {
       action: 'start_call',
-      params: { leadId: lead_id, to, from, twimlUrl, record }
+      params: { leadId: lead_id, to, recordingConsent: recording_consent === true }
     });
     return response?.data || response;
   }),
